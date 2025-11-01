@@ -60,8 +60,9 @@ public class SceneSetup : MonoBehaviour
 
         // Position camera to see the entire grid
         // Pointy-top 10x10 grid spans: X(0-16.5), Z(0-13.5), center at (8.2, 0, 6.75)
-        mainCam.transform.position = new Vector3(8f, 22f, -2f);
-        mainCam.transform.rotation = Quaternion.Euler(65f, 0f, 0f);
+        // Lower camera height (12 instead of 22) to make small hexagons visible
+        mainCam.transform.position = new Vector3(8f, 12f, -2f);
+        mainCam.transform.rotation = Quaternion.Euler(55f, 0f, 0f);
 
         // Add camera controller
         if (mainCam.GetComponent<CameraController>() == null)
