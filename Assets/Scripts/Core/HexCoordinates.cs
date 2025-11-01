@@ -45,13 +45,18 @@ public struct HexCoordinates
     }
 
     // Convert axial to world position (for rendering)
-    // Using flat-top hexagon orientation with row offset for visual layout
+    // Using pointy-top hexagon orientation (points on left/right, flat sides on top/bottom)
     public Vector3 ToWorldPosition(float hexSize)
     {
-        // Offset every other row to create hexagonal pattern
-        float xOffset = (r % 2) * (hexSize * 3f / 4f);
-        float x = hexSize * (3f / 2f * q) + xOffset;
-        float z = hexSize * Mathf.Sqrt(3f) * r;
+        // Pointy-top hexagon tiling
+        // Horizontal spacing = sqrt(3) * radius, vertical spacing = 1.5 * radius
+        float xSpacing = Mathf.Sqrt(3f) * hexSize;
+        float zSpacing = 1.5f * hexSize;
+
+        // Offset odd rows by half the horizontal spacing
+        float x = q * xSpacing + (r % 2) * (xSpacing / 2f);
+        float z = r * zSpacing;
+
         return new Vector3(x, 0, z);
     }
 
