@@ -51,8 +51,35 @@ public class HexGrid : MonoBehaviour
         HexCoordinates coords = new HexCoordinates(q, r);
         Vector3 position = coords.ToWorldPosition(hexSize);
 
+        // Debug: Log first cell creation
+        if (q == 0 && r == 0)
+        {
+            Debug.Log($"[DEBUG] Creating first cell at ({q}, {r})");
+            Debug.Log($"[DEBUG]   World position: {position}");
+            Debug.Log($"[DEBUG]   HexGrid transform: {transform.name}");
+        }
+
         GameObject cellObject = Instantiate(hexCellPrefab, position, Quaternion.identity, transform);
         cellObject.name = $"Hex {coords}";
+
+        // Debug: Check parenting
+        if (q == 0 && r == 0)
+        {
+            Debug.Log($"[DEBUG]   Cell created: {cellObject.name}");
+            Debug.Log($"[DEBUG]   Cell parent: {(cellObject.transform.parent != null ? cellObject.transform.parent.name : "NULL")}");
+            Debug.Log($"[DEBUG]   Cell active: {cellObject.activeInHierarchy}");
+            Debug.Log($"[DEBUG]   Cell has MeshRenderer: {cellObject.GetComponent<MeshRenderer>() != null}");
+            Debug.Log($"[DEBUG]   Cell has MeshFilter: {cellObject.GetComponent<MeshFilter>() != null}");
+            MeshFilter mf = cellObject.GetComponent<MeshFilter>();
+            if (mf != null)
+            {
+                Debug.Log($"[DEBUG]   Mesh assigned: {mf.mesh != null}");
+                if (mf.mesh != null)
+                {
+                    Debug.Log($"[DEBUG]   Mesh vertex count: {mf.mesh.vertexCount}");
+                }
+            }
+        }
 
         HexCell cell = cellObject.GetComponent<HexCell>();
         if (cell == null)
@@ -61,6 +88,17 @@ public class HexGrid : MonoBehaviour
         }
 
         cell.Initialize(coords, TerrainType.Plains);
+
+        // Debug: Check color after initialization
+        if (q == 0 && r == 0)
+        {
+            MeshRenderer mr = cellObject.GetComponent<MeshRenderer>();
+            if (mr != null && mr.material != null)
+            {
+                Debug.Log($"[DEBUG]   Material color: {mr.material.color}");
+            }
+        }
+
         cells[coords] = cell;
     }
 
