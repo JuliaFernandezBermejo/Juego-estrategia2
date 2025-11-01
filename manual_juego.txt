@@ -1,0 +1,510 @@
+================================================================================
+        MANUAL DEL JUEGO - ESTRATEGIA POR TURNOS CON IA JERÁRQUICA
+================================================================================
+
+DESCRIPCIÓN GENERAL
+-------------------
+
+Este es un juego de estrategia por turnos donde dos jugadores (humanos o IAs)
+compiten por el dominio del territorio. El objetivo principal es capturar la
+base enemiga, que es una celda especial en el mapa.
+
+El juego implementa un sistema de Inteligencia Artificial jerárquico de tres
+niveles que permite a la IA tomar decisiones estratégicas, tácticas y
+operacionales de manera autónoma y coordinada.
+
+
+COMPONENTES DEL JUEGO
+----------------------
+
+1. MAPA HEXAGONAL
+   El tablero está compuesto por una cuadrícula hexagonal de 10x10 celdas.
+   Cada celda hexagonal puede contener:
+   - Diferentes tipos de terreno
+   - Una unidad (solo una por celda)
+   - Un nodo de recursos
+   - La base de un jugador
+
+2. TIPOS DE TERRENO
+   El mapa incluye cuatro tipos de terreno que afectan al movimiento y combate:
+
+   - LLANURAS (Plains): Terreno normal, sin modificadores especiales
+     * Coste de movimiento: 1.0x (normal)
+     * Bonificación defensiva: 0
+     * Color: Verde claro
+
+   - BOSQUE (Forest): Terreno con vegetación densa
+     * Coste de movimiento: 1.5x (más lento)
+     * Bonificación defensiva: +2
+     * Color: Verde oscuro
+     * Ventaja para: Infantería
+
+   - MONTAÑA (Mountain): Terreno elevado y rocoso
+     * Coste de movimiento: 2.0x (muy lento)
+     * Bonificación defensiva: +3
+     * Color: Gris
+     * Penalización para: Artillería
+
+   - AGUA (Water): Terreno intransitable
+     * Coste de movimiento: 999x (prácticamente imposible)
+     * Color: Azul
+     * Las unidades no pueden atravesar el agua
+
+3. UNIDADES
+   Hay tres tipos de unidades en el juego:
+
+   INFANTERÍA:
+   - Rol: Unidad balanceada y versátil
+   - Coste de producción: Bajo
+   - Puntos de Vida (HP): Medios
+   - Poder de Ataque (PA): Medio
+   - Poder de Defensa (PD): Medio
+   - Puntos de Movimiento (PM): Medios
+   - Alcance de Ataque: Corto (1 celda)
+   - Terreno preferido: Bosque
+   - Terreno penalizado: Ninguno específico
+
+   CABALLERÍA:
+   - Rol: Unidad rápida y móvil
+   - Coste de producción: Medio
+   - Puntos de Vida (HP): Medios
+   - Poder de Ataque (PA): Medio-Alto
+   - Poder de Defensa (PD): Bajo
+   - Puntos de Movimiento (PM): Altos
+   - Alcance de Ataque: Medio (2 celdas)
+   - Terreno preferido: Llanuras
+   - Terreno penalizado: Montaña
+
+   ARTILLERÍA:
+   - Rol: Unidad de ataque a distancia
+   - Coste de producción: Alto
+   - Puntos de Vida (HP): Bajos
+   - Poder de Ataque (PA): Alto
+   - Poder de Defensa (PD): Muy bajo
+   - Puntos de Movimiento (PM): Bajos
+   - Alcance de Ataque: Largo (3-4 celdas)
+   - Terreno preferido: Llanuras
+   - Terreno penalizado: Montaña
+
+4. RECURSOS
+   El juego utiliza un sistema de recursos genéricos:
+   - Los recursos se obtienen ocupando celdas con nodos de recursos
+   - Cada jugador recibe recursos adicionales al inicio de cada turno
+   - Los recursos se utilizan para producir nuevas unidades
+   - Los nodos de recursos están distribuidos aleatoriamente por el mapa
+
+5. BASES
+   Cada jugador tiene una base:
+   - Ubicada en esquinas opuestas del mapa
+   - Sirve como punto de producción de unidades
+   - Es el objetivo principal: capturarla significa victoria
+   - Siempre tiene terreno tipo Llanuras
+   - No puede ser destruida, solo capturada
+
+
+MECÁNICAS DEL JUEGO
+--------------------
+
+1. SISTEMA DE TURNOS
+   - El juego se desarrolla por turnos alternados
+   - El Jugador 0 (azul) siempre comienza
+   - Cada jugador ejecuta todas sus acciones en su turno
+   - Al final del turno, todas las unidades recuperan sus puntos de movimiento
+   - El turno se termina presionando la tecla ESPACIO
+
+2. MOVIMIENTO
+   Durante tu turno, puedes mover tus unidades:
+   - Haz clic en una unidad propia para seleccionarla
+   - Haz clic en una celda de destino para mover la unidad
+   - El movimiento consume Puntos de Movimiento según:
+     * Distancia recorrida
+     * Tipo de terreno atravesado
+     * Modificadores de terreno de la unidad
+   - Una unidad no puede moverse si no tiene PM suficientes
+   - El movimiento se calcula usando búsqueda de caminos A*
+
+3. COMBATE
+   El combate es automático cuando atacas:
+   - Selecciona tu unidad atacante
+   - Haz clic en una unidad enemiga dentro del alcance
+   - El daño se calcula con la fórmula:
+     DAÑO = (PA atacante + Bonif. Terreno) - (PD defensor + Bonif. Defensa)
+   - El daño mínimo es siempre 1
+   - Cada unidad solo puede atacar una vez por turno
+   - Una unidad muere cuando su HP llega a 0
+
+4. RECOLECCIÓN DE RECURSOS
+   - Mueve una unidad a una celda con nodo de recursos
+   - Los recursos se recolectan automáticamente al ocupar la celda
+   - Cantidad recolectada: +10 recursos por nodo
+   - Ingresos pasivos: +10 recursos al inicio de cada turno
+
+5. PRODUCCIÓN DE UNIDADES
+   - Las unidades se producen en la base
+   - Requiere recursos suficientes según el coste de la unidad
+   - La nueva unidad aparece en una celda adyacente a la base
+   - Solo se puede producir si hay celdas libres alrededor de la base
+
+6. CONDICIÓN DE VICTORIA
+   El juego termina cuando:
+   - Un jugador captura la base enemiga (su unidad ocupa la celda de la base)
+   - Se declara ganador al jugador que captura la base
+   - No hay empates posibles
+
+
+CONTROLES DEL JUEGO
+-------------------
+
+RATÓN:
+   - Clic izquierdo en unidad propia: Seleccionar unidad
+   - Clic izquierdo en celda vacía: Mover unidad seleccionada
+   - Clic izquierdo en unidad enemiga: Atacar (si está en rango)
+   - Rueda del ratón: Zoom in/out
+   - Botón central + arrastrar: Mover cámara
+
+TECLADO:
+   - ESPACIO: Terminar turno
+   - W/A/S/D o Flechas: Mover cámara
+   - Q: Rotar cámara izquierda
+   - E: Rotar cámara derecha
+
+
+SISTEMA DE INTELIGENCIA ARTIFICIAL
+-----------------------------------
+
+La IA del juego está diseñada como un sistema jerárquico de tres niveles que
+trabajan en conjunto para crear un oponente desafiante y realista:
+
+NIVEL 1: OPERACIONAL (Movimiento)
+----------------------------------
+Nivel más bajo de la jerarquía. Se encarga de la ejecución física del movimiento.
+
+FUNCIONAMIENTO:
+- Recibe órdenes de movimiento del nivel Táctico
+- Calcula rutas usando algoritmo A* adaptado para hexágonos
+- Implementa "Pathfinding Táctico" que considera:
+  * Coste del terreno base
+  * Preferencias de terreno de la unidad
+  * Zonas de peligro (presencia de enemigos cercanos)
+  * Alcance de ataque enemigo
+
+CARACTERÍSTICAS:
+- Evita zonas peligrosas cuando es posible
+- Prefiere terrenos favorables para el tipo de unidad
+- Encuentra el camino más seguro, no solo el más corto
+- Adapta la ruta según el contexto táctico
+
+EJEMPLO:
+Si una Infantería debe moverse hacia el norte, el pathfinding táctico:
+- Priorizará rutas que pasen por bosques (su terreno preferido)
+- Evitará celdas cercanas a unidades enemigas poderosas
+- Buscará balance entre distancia y seguridad
+
+
+NIVEL 2: TÁCTICO (Toma de Decisiones de Unidades)
+--------------------------------------------------
+Nivel intermedio. Cada unidad tiene su propia IA que interpreta órdenes
+estratégicas y toma decisiones autónomas.
+
+FUNCIONAMIENTO:
+- Cada unidad IA tiene un Árbol de Comportamiento (Behavior Tree)
+- Recibe órdenes GENÉRICAS del nivel Estratégico
+- Interpreta y ejecuta las órdenes según el contexto local
+- Toma decisiones autónomas cuando no hay órdenes o en situaciones de emergencia
+
+TIPOS DE ÓRDENES QUE RECIBE:
+1. "AttackBase" (Atacar Base)
+   - La unidad se dirige hacia la base enemiga
+   - En el camino, ataca a enemigos que encuentre
+   - Usa pathfinding táctico para evitar peligros
+
+2. "DefendZone" (Defender Zona)
+   - La unidad permanece cerca de una zona asignada
+   - Ataca enemigos que se acerquen
+   - No se aleja más de 2 celdas de la zona
+
+3. "GatherResources" (Recolectar Recursos)
+   - La unidad busca el nodo de recursos más cercano
+   - Se mueve hacia él evitando peligros
+   - Al llegar, completa la orden
+
+4. "Retreat" (Retirarse)
+   - La unidad se retira hacia la base propia
+   - Busca zonas seguras (alta influencia amiga)
+   - Al llegar cerca de la base, cambia a defender
+
+DECISIONES AUTÓNOMAS:
+Las unidades NO son robots tontos. Toman decisiones propias:
+- Si están bajo ataque, contraatacan o huyen según su salud
+- Si tienen poca vida (<30%), se retiran automáticamente
+- Eligen objetivos tácticos (qué enemigo atacar)
+- Deciden cuándo perseguir y cuándo defender
+
+ÁRBOL DE COMPORTAMIENTO:
+El árbol evalúa condiciones en orden de prioridad:
+1. ¿Estoy bajo ataque? → Defender/Contraatacar
+2. ¿Tengo una orden? → Ejecutar orden según tipo
+3. ¿Nada que hacer? → Permanecer en modo Idle
+
+AUTONOMÍA:
+Esto es clave: la IA Táctica NO recibe órdenes específicas como:
+  ❌ "Mueve la unidad X a la celda (7,5)"
+  ❌ "Ataca a la unidad enemiga en (9,3)"
+
+En su lugar, recibe órdenes genéricas:
+  ✓ "Atacar la base enemiga"
+  ✓ "Defender la zona de la base propia"
+
+Y la unidad decide CÓMO ejecutarlas basándose en:
+- Su estado actual (vida, posición, puntos de movimiento)
+- Enemigos cercanos y amenazas
+- Terreno circundante
+- Contexto táctico local
+
+
+NIVEL 3: ESTRATÉGICO (IA Global del Juego)
+-------------------------------------------
+Nivel más alto. Es el "cerebro" que coordina todas las unidades del jugador IA.
+
+FUNCIONAMIENTO:
+Se ejecuta una vez por turno del jugador IA y realiza estos pasos:
+
+1. ANÁLISIS DEL ESTADO DEL JUEGO:
+   - Cuenta unidades propias y enemigas
+   - Evalúa recursos disponibles
+   - Actualiza el mapa de influencia
+   - Actualiza waypoints tácticos
+
+2. MAPA DE INFLUENCIA:
+   Sistema que calcula el "control territorial":
+   - Cada unidad proyecta influencia en celdas cercanas
+   - La influencia decae con la distancia
+   - Se calcula influencia amiga vs enemiga
+   - Identifica zonas seguras y zonas de peligro
+
+   USOS:
+   - Identificar dónde es seguro reagrupar tropas
+   - Detectar zonas de combate activo
+   - Evaluar control territorial
+   - Planificar movimientos estratégicos
+
+3. WAYPOINTS TÁCTICOS:
+   Puntos de interés estratégico en el mapa:
+   - ATAQUE: Base enemiga (prioridad alta)
+   - DEFENSA: Base propia (prioridad media-alta)
+   - RALLY: Zonas seguras para reagrupar (prioridad media)
+   - RECURSOS: Nodos de recursos (prioridad baja-media)
+
+4. TOMA DE DECISIONES ESTRATÉGICAS:
+   Basándose en el análisis, decide:
+
+   a) Distribución de roles:
+      - ¿Cuántas unidades asignar a ataque?
+      - ¿Cuántas a defensa?
+      - ¿Cuántas a recolectar recursos?
+
+   b) Factores que influyen:
+      - Agresividad configurada (1-10)
+      - Ventaja numérica (¿tengo más unidades?)
+      - Recursos disponibles
+      - Estado de las unidades (salud)
+
+   c) Lógica de decisión:
+      - Si soy más fuerte → Más unidades a ataque
+      - Si necesito recursos → Más unidades a recolectar
+      - Si estoy en desventaja → Más unidades a defensa
+      - Siempre mantener algunas unidades defendiendo base
+
+5. ASIGNACIÓN DE ÓRDENES:
+   Para cada unidad propia:
+   - Evalúa su estado (salud, posición)
+   - Decide qué orden darle
+   - Asigna un waypoint objetivo
+   - Envía la orden a la IA Táctica de la unidad
+
+   EJEMPLO DE ASIGNACIÓN:
+   - 60% de unidades → "AttackBase" (al waypoint de ataque)
+   - 30% de unidades → "DefendZone" (al waypoint de defensa)
+   - 10% de unidades → "GatherResources" (a waypoints de recursos)
+
+6. PRODUCCIÓN DE UNIDADES:
+   - Evalúa si hay recursos suficientes
+   - Decide cuándo producir nuevas unidades
+   - Elige qué tipo de unidad producir
+   - Intenta mantener un ejército equilibrado
+
+
+FLUJO COMPLETO DE DECISIÓN IA
+------------------------------
+
+Veamos un ejemplo completo de cómo funciona la IA desde arriba hacia abajo:
+
+TURNO 5 - JUGADOR IA (Jugador 1):
+
+1. NIVEL ESTRATÉGICO se activa:
+   - Analiza: "Tengo 4 unidades, enemigo tiene 3 unidades"
+   - Analiza: "Tengo 65 recursos"
+   - Actualiza mapa de influencia:
+     * Mi base: Alta influencia amiga
+     * Centro del mapa: Influencia mixta (zona de conflicto)
+     * Base enemiga: Alta influencia enemiga
+   - Actualiza waypoints:
+     * Ataque → Base enemiga en (9,9)
+     * Defensa → Mi base en (0,0)
+     * Rally → Celda segura en (2,3)
+     * Recursos → Nodos en (4,5) y (7,2)
+
+   - DECISIÓN: "Soy ligeramente más fuerte, pero necesito recursos"
+     * 2 unidades → AttackBase (50%)
+     * 1 unidad → DefendZone (25%)
+     * 1 unidad → GatherResources (25%)
+
+   - ASIGNA ÓRDENES:
+     * Infantería A → "AttackBase" con objetivo waypoint (9,9)
+     * Caballería B → "AttackBase" con objetivo waypoint (9,9)
+     * Infantería C → "DefendZone" con objetivo waypoint (0,0)
+     * Artillería D → "GatherResources" con objetivo waypoint (4,5)
+
+2. NIVEL TÁCTICO se activa para cada unidad:
+
+   INFANTERÍA A (ejecutando "AttackBase"):
+   - Comportamiento: "Tengo orden de atacar base"
+   - Evalúa: "Base enemiga está en (9,9)"
+   - Evalúa: "Hay un enemigo en (6,7) en mi camino"
+   - DECISIÓN: "Atacar al enemigo si está en rango, sino seguir avanzando"
+   - Acción: "Moverme hacia (6,7)" → Llama a pathfinding
+
+   INFANTERÍA C (ejecutando "DefendZone"):
+   - Comportamiento: "Tengo orden de defender"
+   - Evalúa: "Zona de defensa en (0,0)"
+   - Evalúa: "Estoy a 1 celda de la zona"
+   - Evalúa: "Hay un enemigo cercano en (3,2)"
+   - DECISIÓN: "Permanecer aquí y atacar al enemigo"
+   - Acción: "Atacar unidad en (3,2)" → Ejecuta ataque
+
+3. NIVEL OPERACIONAL se activa (Pathfinding):
+
+   Para INFANTERÍA A que quiere moverse a (6,7):
+   - Calcula ruta con A* táctico
+   - Posición actual: (4,5)
+   - Objetivo: (6,7)
+
+   - Evalúa opciones:
+     RUTA 1: (4,5) → (5,6) → (6,7)
+       Celdas: Llanura → Bosque → Llanura
+       Coste terreno: 1.0 + 1.5*0.5 + 1.0 = 2.75 (bosque preferido para infantería)
+       Peligro: Hay enemigo artillería en (7,8) rango 3
+       Coste peligro: +5.0 (celda (6,7) está en rango)
+       TOTAL: 7.75
+
+     RUTA 2: (4,5) → (4,6) → (5,7) → (6,7)
+       Celdas: Llanura → Bosque → Bosque → Llanura
+       Coste terreno: 1.0 + 1.5*0.5 + 1.5*0.5 + 1.0 = 3.5
+       Peligro: Ruta más alejada del enemigo
+       Coste peligro: +2.0
+       TOTAL: 5.5 ← MEJOR RUTA
+
+   - DECISIÓN: Usar ruta 2 (más segura aunque más larga)
+   - Retorna: [(4,5), (4,6), (5,7), (6,7)]
+
+   - La unidad ejecuta el primer paso del camino: (4,5) → (4,6)
+
+
+VENTAJAS DEL SISTEMA JERÁRQUICO
+--------------------------------
+
+1. SEPARACIÓN DE RESPONSABILIDADES:
+   - Estratégico: "QUÉ hacer" (visión global)
+   - Táctico: "CÓMO hacerlo" (decisiones locales)
+   - Operacional: "Ejecución práctica" (cálculos de ruta)
+
+2. AUTONOMÍA DE UNIDADES:
+   - Las unidades no son tontas
+   - Reaccionan a situaciones locales
+   - Toman decisiones tácticas propias
+   - El juego es más dinámico e impredecible
+
+3. ESCALABILIDAD:
+   - Funciona bien con 2 unidades o con 20 unidades
+   - Cada nivel maneja su complejidad
+   - Fácil ajustar comportamiento en cada nivel
+
+4. REALISMO:
+   - Simula una cadena de mando militar real
+   - General (Estratégico) da órdenes generales
+   - Oficiales (Táctico) interpretan y adaptan
+   - Soldados (Operacional) ejecutan
+
+5. MODIFICABILIDAD:
+   - Cambiar agresividad solo afecta nivel Estratégico
+   - Añadir nueva orden solo afecta nivel Táctico
+   - Mejorar pathfinding solo afecta nivel Operacional
+
+
+ESTRATEGIAS PARA JUGAR
+-----------------------
+
+1. CONTRA IA - CONSEJOS:
+   - La IA es agresiva: defiende tu base al principio
+   - Recolecta recursos temprano para producir más unidades
+   - Usa el terreno a tu favor (bosques para infantería)
+   - La Artillería es poderosa pero frágil: protégela
+   - Ataca la base enemiga cuando tengas ventaja numérica
+
+2. COMPOSICIÓN DE EJÉRCITO:
+   - Infantería: Base de tu ejército, versátil
+   - Caballería: Para movimientos rápidos y flanqueos
+   - Artillería: Para debilitar enemigos antes del asalto
+
+3. GESTIÓN DE RECURSOS:
+   - Producir unidades constantemente
+   - No acumular demasiados recursos sin usar
+   - Controlar nodos de recursos da ventaja económica
+
+4. TÁCTICA DE COMBATE:
+   - Ataca con varias unidades a la vez
+   - Usa terreno defensivo cuando estés en desventaja
+   - No dejes unidades aisladas (son vulnerables)
+   - Retira unidades dañadas a zonas seguras
+
+
+LIMITACIONES Y ALCANCE
+-----------------------
+
+Este juego es un proyecto educativo centrado en la IA. Por simplicidad:
+
+NO INCLUYE:
+- Niebla de guerra (todo el mapa es visible)
+- Animaciones (movimiento instantáneo)
+- Efectos visuales complejos
+- Sonido o música
+- Sistema de guardado
+- Habilidades especiales de unidades
+- Múltiples recursos
+- Más de 2 jugadores
+
+SÍ INCLUYE:
+- IA jerárquica completa y funcional
+- Sistema hexagonal completo
+- Combate táctico
+- Pathfinding inteligente
+- Toma de decisiones autónoma
+- Coordinación estratégica
+
+
+CRÉDITOS
+--------
+
+Proyecto desarrollado como parte del curso de Inteligencia Artificial.
+Motor: Unity 6000.0.40f1
+Sistema de IA: Implementación personalizada basada en conceptos de:
+  - "Artificial Intelligence for Games" (Millington & Funge)
+  - Red Blob Games (pathfinding hexagonal)
+
+Desarrollado siguiendo el principio KISS (Keep It Simple, Stupid).
+Enfoque en funcionalidad e IA, no en gráficos ni pulido.
+
+
+================================================================================
+                              FIN DEL MANUAL
+================================================================================
