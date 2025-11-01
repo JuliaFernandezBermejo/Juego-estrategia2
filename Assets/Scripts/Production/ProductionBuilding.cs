@@ -17,7 +17,7 @@ public class ProductionBuilding : MonoBehaviour
         gameManager = manager;
     }
 
-    public bool CanProduceUnit(UnitStats stats)
+    public bool CanProduceUnit(HardcodedUnitStats stats)
     {
         if (gameManager == null)
             return false;
@@ -26,7 +26,7 @@ public class ProductionBuilding : MonoBehaviour
         return resources >= stats.cost;
     }
 
-    public void ProduceUnit(UnitStats stats, HexGrid hexGrid)
+    public void ProduceUnit(HardcodedUnitStats stats, HexGrid hexGrid)
     {
         if (!CanProduceUnit(stats))
         {
