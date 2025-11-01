@@ -80,7 +80,18 @@ public class GameManager : MonoBehaviour
             p0Base.IsBase = true;
             p0Base.OwnerPlayerID = 0;
             p0Base.SetTerrain(TerrainType.Plains);
+
+            // Give base a distinct blue color
+            MeshRenderer renderer = p0Base.GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                renderer.material.color = new Color(0.3f, 0.3f, 0.8f);
+            }
+
             playerBases[0] = p0Base;
+
+            // Ensure neighbors are passable for unit spawning
+            EnsurePassableNeighbors(p0Base);
         }
 
         // Player 1 base at top-right
@@ -90,7 +101,38 @@ public class GameManager : MonoBehaviour
             p1Base.IsBase = true;
             p1Base.OwnerPlayerID = 1;
             p1Base.SetTerrain(TerrainType.Plains);
+
+            // Give base a distinct red color
+            MeshRenderer renderer = p1Base.GetComponent<MeshRenderer>();
+            if (renderer != null)
+            {
+                renderer.material.color = new Color(0.8f, 0.3f, 0.3f);
+            }
+
             playerBases[1] = p1Base;
+
+            // Ensure neighbors are passable for unit spawning
+            EnsurePassableNeighbors(p1Base);
+        }
+    }
+
+    private void EnsurePassableNeighbors(HexCell baseCell)
+    {
+        List<HexCell> neighbors = hexGrid.GetNeighbors(baseCell.Coordinates);
+        int passableCount = 0;
+
+        foreach (var neighbor in neighbors)
+        {
+            if (neighbor.IsPassable())
+            {
+                passableCount++;
+            }
+            else if (passableCount < 2)
+            {
+                // Convert impassable neighbors to plains until we have at least 2 passable
+                neighbor.SetTerrain(TerrainType.Plains);
+                passableCount++;
+            }
         }
     }
 

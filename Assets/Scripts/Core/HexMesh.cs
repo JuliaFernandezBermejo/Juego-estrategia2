@@ -6,7 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class HexMesh : MonoBehaviour
 {
-    private const float outerRadius = 0.5f;
+    private const float outerRadius = 1.0f; // Doubled to match hexSize spacing
     private const float innerRadius = outerRadius * 0.866025404f; // sqrt(3)/2
 
     public static Mesh CreateHexagonMesh()
