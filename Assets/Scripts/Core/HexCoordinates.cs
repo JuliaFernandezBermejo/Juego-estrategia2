@@ -45,11 +45,13 @@ public struct HexCoordinates
     }
 
     // Convert axial to world position (for rendering)
-    // Using flat-top hexagon orientation
+    // Using flat-top hexagon orientation with row offset for visual layout
     public Vector3 ToWorldPosition(float hexSize)
     {
-        float x = hexSize * (3f / 2f * q);
-        float z = hexSize * (Mathf.Sqrt(3f) / 2f * q + Mathf.Sqrt(3f) * r);
+        // Offset every other row to create hexagonal pattern
+        float xOffset = (r % 2) * (hexSize * 3f / 4f);
+        float x = hexSize * (3f / 2f * q) + xOffset;
+        float z = hexSize * Mathf.Sqrt(3f) * r;
         return new Vector3(x, 0, z);
     }
 

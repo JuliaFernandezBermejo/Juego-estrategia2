@@ -16,6 +16,7 @@ public class HexGrid : MonoBehaviour
 
     public int Width => gridWidth;
     public int Height => gridHeight;
+    public bool IsGridReady { get; private set; }
 
     void Start()
     {
@@ -30,18 +31,19 @@ public class HexGrid : MonoBehaviour
             hexCellPrefab = CreateHexPrefab();
         }
 
-        // Generate grid using axial coordinates
-        // For a rectangular-shaped hex grid
+        // Generate grid using simple 0-based coordinates
+        // Visual offset is handled in HexCoordinates.ToWorldPosition()
         for (int r = 0; r < gridHeight; r++)
         {
-            int qOffset = r / 2; // Offset for odd rows
-            for (int q = -qOffset; q < gridWidth - qOffset; q++)
+            for (int q = 0; q < gridWidth; q++)
             {
                 CreateCell(q, r);
             }
         }
 
         GenerateRandomTerrain();
+        IsGridReady = true;
+        Debug.Log($"HexGrid created: {gridWidth}x{gridHeight} = {cells.Count} cells");
     }
 
     private void CreateCell(int q, int r)

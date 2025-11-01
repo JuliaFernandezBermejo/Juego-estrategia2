@@ -38,8 +38,17 @@ public class GameManager : MonoBehaviour
 
     private void InitializeGame()
     {
-        // Wait for grid to be created
-        Invoke(nameof(SetupGame), 0.1f);
+        // Wait for grid to be ready
+        InvokeRepeating(nameof(CheckGridReady), 0.1f, 0.1f);
+    }
+
+    private void CheckGridReady()
+    {
+        if (hexGrid != null && hexGrid.IsGridReady)
+        {
+            CancelInvoke(nameof(CheckGridReady));
+            SetupGame();
+        }
     }
 
     private void SetupGame()
