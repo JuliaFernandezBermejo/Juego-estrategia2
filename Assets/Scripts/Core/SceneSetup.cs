@@ -28,16 +28,19 @@ public class SceneSetup : MonoBehaviour
         // 1. Setup Camera
         SetupCamera();
 
-        // 2. Setup HexGrid
+        // 2. Setup Lighting
+        SetupLighting();
+
+        // 3. Setup HexGrid
         GameObject hexGridObj = SetupHexGrid();
 
-        // 3. Setup GameManager
+        // 4. Setup GameManager
         GameObject gameManagerObj = SetupGameManager();
 
-        // 4. Setup InputManager
+        // 5. Setup InputManager
         SetupInputManager(gameManagerObj);
 
-        // 5. Setup StrategicManager (AI)
+        // 6. Setup StrategicManager (AI)
         SetupStrategicManager(gameManagerObj, hexGridObj);
 
         setupComplete = true;
@@ -67,6 +70,24 @@ public class SceneSetup : MonoBehaviour
         }
 
         Debug.Log("✓ Camera setup complete");
+    }
+
+    private void SetupLighting()
+    {
+        Light mainLight = FindObjectOfType<Light>();
+        if (mainLight == null)
+        {
+            GameObject lightObj = new GameObject("Directional Light");
+            mainLight = lightObj.AddComponent<Light>();
+            mainLight.type = LightType.Directional;
+        }
+
+        // Position light to illuminate the grid from above
+        mainLight.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
+        mainLight.color = Color.white;
+        mainLight.intensity = 1.0f;
+
+        Debug.Log("✓ Lighting setup complete");
     }
 
     private GameObject SetupHexGrid()
