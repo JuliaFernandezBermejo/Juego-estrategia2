@@ -61,6 +61,7 @@ public class HexGrid : MonoBehaviour
 
         GameObject cellObject = Instantiate(hexCellPrefab, position, Quaternion.Euler(0, 30, 0), transform);
         cellObject.name = $"Hex {coords}";
+        cellObject.SetActive(true); // Activate instantiated cell (prefab is inactive)
 
         // Debug: Check parenting
         if (q == 0 && r == 0)
