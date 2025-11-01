@@ -55,9 +55,10 @@ public class SceneSetup : MonoBehaviour
             camObj.tag = "MainCamera";
         }
 
-        // Position camera to see the grid
-        mainCam.transform.position = new Vector3(4.5f, 15f, 4.5f);
-        mainCam.transform.rotation = Quaternion.Euler(60f, 0f, 0f);
+        // Position camera to see the entire grid
+        // Grid center is approximately (7, 0, 7.8) with 10x10 hex layout
+        mainCam.transform.position = new Vector3(7f, 20f, 0f);
+        mainCam.transform.rotation = Quaternion.Euler(70f, 0f, 0f);
 
         // Add camera controller
         if (mainCam.GetComponent<CameraController>() == null)
