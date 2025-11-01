@@ -89,6 +89,9 @@ public class HexGrid : MonoBehaviour
 
         cell.Initialize(coords, TerrainType.Plains);
 
+        // Create colored border for this cell
+        CreateBorderForCell(cellObject, TerrainType.Plains);
+
         // Debug: Check color after initialization
         if (q == 0 && r == 0)
         {
@@ -100,6 +103,26 @@ public class HexGrid : MonoBehaviour
         }
 
         cells[coords] = cell;
+    }
+
+    private void CreateBorderForCell(GameObject cellObject, TerrainType terrain)
+    {
+        // Create border hexagon slightly larger for outline effect
+        GameObject border = new GameObject("Border");
+        border.transform.parent = cellObject.transform;
+        border.transform.localPosition = new Vector3(0, -0.01f, 0); // Slightly below main hex
+        border.transform.localRotation = Quaternion.identity;
+        border.transform.localScale = new Vector3(1.05f, 1f, 1.05f); // 5% larger
+
+        MeshFilter borderMF = border.AddComponent<MeshFilter>();
+        MeshRenderer borderMR = border.AddComponent<MeshRenderer>();
+
+        borderMF.mesh = HexMesh.CreateHexagonMesh();
+
+        Material borderMat = new Material(Shader.Find("Unlit/Color"));
+        Color terrainColor = terrain.GetTerrainColor();
+        borderMat.color = terrainColor * 0.5f; // Darker version for border
+        borderMR.material = borderMat;
     }
 
     private GameObject CreateHexPrefab()
@@ -115,8 +138,8 @@ public class HexGrid : MonoBehaviour
         meshFilter.mesh = HexMesh.CreateHexagonMesh();
         meshCollider.sharedMesh = meshFilter.mesh;
 
-        // Create simple material
-        Material material = new Material(Shader.Find("Standard"));
+        // Create simple material (Unlit/Color works in all render pipelines)
+        Material material = new Material(Shader.Find("Unlit/Color"));
         meshRenderer.material = material;
 
         return prefab;
