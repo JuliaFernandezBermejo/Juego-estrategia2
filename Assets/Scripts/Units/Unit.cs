@@ -6,14 +6,14 @@ using UnityEngine;
 public class Unit : MonoBehaviour
 {
     [Header("Unit Configuration")]
-    [SerializeField] private UnitStats stats;
+    [SerializeField] private HardcodedUnitStats stats;
 
     [Header("Runtime Data")]
     [SerializeField] private int currentHealth;
     [SerializeField] private int remainingMovement;
     [SerializeField] private bool hasAttacked;
 
-    public UnitStats Stats => stats;
+    public HardcodedUnitStats Stats => stats;
     public int CurrentHealth => currentHealth;
     public int RemainingMovement => remainingMovement;
     public bool HasAttacked => hasAttacked;
@@ -27,7 +27,7 @@ public class Unit : MonoBehaviour
     private MeshRenderer meshRenderer;
     private Color playerColor;
 
-    public void Initialize(UnitStats unitStats, int ownerPlayerID, HexCell startingCell)
+    public void Initialize(HardcodedUnitStats unitStats, int ownerPlayerID, HexCell startingCell)
     {
         stats = unitStats;
         OwnerPlayerID = ownerPlayerID;

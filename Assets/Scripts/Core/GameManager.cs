@@ -10,11 +10,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private HexGrid hexGrid;
     [SerializeField] private GameObject unitPrefab;
 
-    [Header("Unit Stats")]
-    [SerializeField] private UnitStats infantryStats;
-    [SerializeField] private UnitStats cavalryStats;
-    [SerializeField] private UnitStats artilleryStats;
-
     [Header("Game Settings")]
     [SerializeField] private int numPlayers = 2;
     [SerializeField] private int startingResources = 100;
@@ -103,7 +98,7 @@ public class GameManager : MonoBehaviour
             {
                 if (cell.IsPassable() && spawnCount < 2)
                 {
-                    SpawnUnit(infantryStats, playerID, cell);
+                    SpawnUnit(HardcodedUnitStats.Infantry, playerID, cell);
                     spawnCount++;
                 }
             }
@@ -136,7 +131,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public void SpawnUnit(UnitStats stats, int playerID, HexCell cell)
+    public void SpawnUnit(HardcodedUnitStats stats, int playerID, HexCell cell)
     {
         if (unitPrefab == null)
         {
@@ -246,6 +241,27 @@ public class GameManager : MonoBehaviour
         CheckWinCondition();
 
         Debug.Log($"Turn {turnNumber} - Player {currentPlayerID}'s turn. Resources: {playerResources[currentPlayerID]}");
+
+        // Execute AI turn if it's Player 1 (AI player)
+        if (currentPlayerID == 1)
+        {
+            StrategicManager strategicAI = FindObjectOfType<StrategicManager>();
+            if (strategicAI != null)
+            {
+                Invoke(nameof(ExecuteAITurn), 0.5f); // Small delay so you can see the turn change
+            }
+        }
+    }
+
+    private void ExecuteAITurn()
+    {
+        StrategicManager strategicAI = FindObjectOfType<StrategicManager>();
+        if (strategicAI != null)
+        {
+            strategicAI.ExecuteAITurn();
+            // Auto end AI turn after execution
+            Invoke(nameof(EndTurn), 1.0f);
+        }
     }
 
     private void CheckWinCondition()
