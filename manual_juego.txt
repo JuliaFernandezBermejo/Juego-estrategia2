@@ -24,55 +24,20 @@ COMPONENTES DEL JUEGO
 
 2. TIPOS DE TERRENO
 
-   LLANURAS (Plains):
-   - Coste de movimiento: 1.0x (normal)
-   - Bonificación defensiva: 0
-   - Color: Verde claro
-
-   BOSQUE (Forest):
-   - Coste de movimiento: 1.5x (más lento)
-   - Bonificación defensiva: +2
-   - Color: Verde oscuro
-   - Ventaja para: Infantería
-
-   MONTAÑA (Mountain):
-   - Coste de movimiento: 2.0x (muy lento)
-   - Bonificación defensiva: +3
-   - Color: Gris
-   - Penalización para: Caballería, Artillería
-
-   AGUA (Water):
-   - Intransitable
-   - Color: Azul
+   Terreno        | Movimiento | Def. | Color         | Notas
+   ---------------|------------|------|---------------|--------------------------------
+   Llanuras       | 1.0x       | 0    | Verde claro   | -
+   Bosque         | 1.5x       | +2   | Verde oscuro  | Ventaja: Infantería
+   Montaña        | 2.0x       | +3   | Gris          | Penalización: Caballería, Art.
+   Agua           | Impasable  | -    | Azul          | Intransitable
 
 3. UNIDADES
 
-   INFANTERÍA:
-   - Coste: 20 recursos
-   - Vida: 100 HP
-   - Ataque: 10
-   - Defensa: 5
-   - Alcance: 1 celda
-   - Movimiento: 3
-   - Terreno preferido: Bosque
-
-   CABALLERÍA:
-   - Coste: 30 recursos
-   - Vida: 80 HP
-   - Ataque: 12
-   - Defensa: 3
-   - Alcance: 2 celdas
-   - Movimiento: 5
-   - Terreno preferido: Llanuras
-
-   ARTILLERÍA:
-   - Coste: 40 recursos
-   - Vida: 60 HP
-   - Ataque: 15
-   - Defensa: 2
-   - Alcance: 4 celdas
-   - Movimiento: 2
-   - Terreno preferido: Llanuras
+   Unidad      | Coste | Vida | Ataque | Defensa | Alcance | Mov. | Terreno Pref.
+   ------------|-------|------|--------|---------|---------|------|---------------
+   Infantería  | 20    | 100  | 10     | 5       | 1       | 3    | Bosque
+   Caballería  | 30    | 80   | 12     | 3       | 2       | 5    | Llanuras
+   Artillería  | 40    | 60   | 15     | 2       | 4       | 2    | Llanuras
 
 4. RECURSOS
    - Se obtienen ocupando celdas con nodos de recursos
