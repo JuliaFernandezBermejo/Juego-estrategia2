@@ -88,6 +88,13 @@ public class GameManager : MonoBehaviour
                 renderer.material.color = new Color(0.3f, 0.3f, 0.8f);
             }
 
+            // Create base marker cylinder
+            GameObject p0Marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            p0Marker.name = "BlueBaseMarker";
+            p0Marker.transform.position = p0Base.transform.position + Vector3.up * 0.5f;
+            p0Marker.transform.localScale = new Vector3(0.6f, 0.3f, 0.6f);
+            p0Marker.GetComponent<MeshRenderer>().material.color = new Color(0.2f, 0.2f, 0.9f);
+
             playerBases[0] = p0Base;
 
             // Ensure neighbors are passable for unit spawning
@@ -108,6 +115,13 @@ public class GameManager : MonoBehaviour
             {
                 renderer.material.color = new Color(0.8f, 0.3f, 0.3f);
             }
+
+            // Create base marker cylinder
+            GameObject p1Marker = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            p1Marker.name = "RedBaseMarker";
+            p1Marker.transform.position = p1Base.transform.position + Vector3.up * 0.5f;
+            p1Marker.transform.localScale = new Vector3(0.6f, 0.3f, 0.6f);
+            p1Marker.GetComponent<MeshRenderer>().material.color = new Color(0.9f, 0.2f, 0.2f);
 
             playerBases[1] = p1Base;
 

@@ -59,7 +59,7 @@ public class HexGrid : MonoBehaviour
             Debug.Log($"[DEBUG]   HexGrid transform: {transform.name}");
         }
 
-        GameObject cellObject = Instantiate(hexCellPrefab, position, Quaternion.identity, transform);
+        GameObject cellObject = Instantiate(hexCellPrefab, position, Quaternion.Euler(0, 30, 0), transform);
         cellObject.name = $"Hex {coords}";
 
         // Debug: Check parenting
