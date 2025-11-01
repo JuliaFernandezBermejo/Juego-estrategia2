@@ -30,13 +30,14 @@ public class HexMesh : MonoBehaviour
         }
 
         // Triangles (6 triangles from center to edges)
+        // Counter-clockwise winding for upward-facing normals
         int[] triangles = new int[18];
         for (int i = 0; i < 6; i++)
         {
             int triIndex = i * 3;
             triangles[triIndex] = 0; // Center
-            triangles[triIndex + 1] = i + 1;
-            triangles[triIndex + 2] = (i + 1) % 6 + 1;
+            triangles[triIndex + 1] = (i + 1) % 6 + 1; // Reversed winding
+            triangles[triIndex + 2] = i + 1;           // Reversed winding
         }
 
         // UVs (simple mapping)
