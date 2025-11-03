@@ -83,10 +83,21 @@ public class UnitAI : MonoBehaviour
 
     public void ExecuteTurn()
     {
-        if (unit == null || !unit.IsAlive())
-            return;
+        Debug.Log($"[UnitAI] ExecuteTurn called for {gameObject.name}");
 
-        // Evaluate behavior tree
+        if (unit == null)
+        {
+            Debug.LogError($"[UnitAI] Unit component is NULL on {gameObject.name}!");
+            return;
+        }
+
+        if (!unit.IsAlive())
+        {
+            Debug.Log($"[UnitAI] Unit {unit.Stats.unitName} is not alive, skipping turn");
+            return;
+        }
+
+        Debug.Log($"[UnitAI] Evaluating behavior tree for {unit.Stats.unitName} with order: {currentOrder}");
         behaviorTree.Evaluate();
     }
 
@@ -150,19 +161,52 @@ public class UnitAI : MonoBehaviour
             targetCell = gameManager.GetPlayerBase(unit.OwnerPlayerID);
         }
 
-        // Attack nearby enemies
+        // Attack nearby enemies if in range
         Unit nearbyEnemy = GetClosestEnemy(unit.Stats.attackRange);
         if (nearbyEnemy != null && unit.CanAttack(nearbyEnemy))
         {
             unit.Attack(nearbyEnemy);
+            Debug.Log($"[UnitAI] {unit.Stats.unitName} defending: attacking {nearbyEnemy.Stats.unitName}");
             return BTNode.NodeState.Running;
         }
 
-        // Stay near defense zone
-        int distance = HexCoordinates.Distance(unit.CurrentCell.Coordinates, targetCell.Coordinates);
-        if (distance > 2 && unit.RemainingMovement > 0)
+        // Active defense: move toward nearby threats or patrol defensively
+        if (unit.RemainingMovement > 0)
         {
-            MoveToward(targetCell);
+            // Check for nearby enemies (not in attack range but close)
+            Unit nearbyThreat = GetClosestEnemy(unit.Stats.attackRange + 3);
+
+            if (nearbyThreat != null)
+            {
+                // Move toward the threat to intercept
+                Debug.Log($"[UnitAI] {unit.Stats.unitName} defending: moving toward threat at {nearbyThreat.CurrentCell.Coordinates}");
+                MoveToward(nearbyThreat.CurrentCell);
+            }
+            else
+            {
+                // No immediate threats - position between base and likely enemy approach
+                // Move to a strategic position (slightly toward enemy base)
+                int distance = HexCoordinates.Distance(unit.CurrentCell.Coordinates, targetCell.Coordinates);
+
+                // Stay within 1-3 cells of the base (defensive perimeter)
+                if (distance > 3)
+                {
+                    // Too far from base, move back
+                    Debug.Log($"[UnitAI] {unit.Stats.unitName} defending: returning to defensive perimeter");
+                    MoveToward(targetCell);
+                }
+                else if (distance < 1)
+                {
+                    // Too close to base (on the base), move to perimeter
+                    HexCell enemyBase = gameManager.GetPlayerBase(unit.OwnerPlayerID == 0 ? 1 : 0);
+                    if (enemyBase != null)
+                    {
+                        Debug.Log($"[UnitAI] {unit.Stats.unitName} defending: moving to intercept position");
+                        MoveToward(enemyBase);
+                    }
+                }
+                // else: already in good defensive position (1-3 cells from base)
+            }
         }
 
         return BTNode.NodeState.Running;
@@ -248,20 +292,48 @@ public class UnitAI : MonoBehaviour
     private void MoveToward(HexCell target)
     {
         if (target == null || unit.RemainingMovement <= 0)
+        {
+            Debug.Log($"[UnitAI] MoveToward failed for {unit.Stats.unitName}: target={target}, remainingMovement={unit.RemainingMovement}");
             return;
+        }
+
+        Debug.Log($"[UnitAI] {unit.Stats.unitName} finding path from {unit.CurrentCell.Coordinates} to {target.Coordinates}");
 
         // Find path
         List<HexCell> path = pathfinding.FindTacticalPath(unit.CurrentCell, target, unit);
 
-        if (path != null && path.Count > 1)
+        if (path == null)
         {
-            // Move to next cell in path
-            HexCell nextCell = path[1];
+            Debug.LogWarning($"[UnitAI] No path found for {unit.Stats.unitName}!");
+            return;
+        }
+
+        if (path.Count <= 1)
+        {
+            Debug.Log($"[UnitAI] Path too short for {unit.Stats.unitName} (length: {path.Count})");
+            return;
+        }
+
+        Debug.Log($"[UnitAI] {unit.Stats.unitName} found path with {path.Count} cells, moving...");
+
+        int cellsMoved = 0;
+        // Move along path while we have movement points
+        for (int i = 1; i < path.Count && unit.RemainingMovement > 0; i++)
+        {
+            HexCell nextCell = path[i];
             if (unit.CanMoveTo(nextCell))
             {
                 unit.MoveTo(nextCell);
+                cellsMoved++;
+            }
+            else
+            {
+                Debug.LogWarning($"[UnitAI] {unit.Stats.unitName} cannot move to {nextCell.Coordinates} at path index {i}");
+                break; // Can't move further along path
             }
         }
+
+        Debug.Log($"[UnitAI] {unit.Stats.unitName} moved {cellsMoved} cells");
     }
 
     private Unit GetClosestEnemy(int maxRange)

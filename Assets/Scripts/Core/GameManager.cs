@@ -12,12 +12,13 @@ public class GameManager : MonoBehaviour
 
     [Header("Game Settings")]
     [SerializeField] private int numPlayers = 2;
-    [SerializeField] private int startingResources = 100;
+    [SerializeField] private int startingResources = 20;
     [SerializeField] private int resourcesPerTurn = 10;
 
     // Game state
     private int currentPlayerID = 0;
     private int turnNumber = 0;
+    private bool anyUnitMovedThisTurn = false;
     private List<Unit> allUnits = new List<Unit>();
     private Dictionary<int, int> playerResources = new Dictionary<int, int>();
     private Dictionary<int, HexCell> playerBases = new Dictionary<int, HexCell>();
@@ -198,11 +199,7 @@ public class GameManager : MonoBehaviour
 
     public void SpawnUnit(HardcodedUnitStats stats, int playerID, HexCell cell)
     {
-        if (unitPrefab == null)
-        {
-            unitPrefab = CreateUnitPrefab();
-        }
-
+        unitPrefab = CreateUnitPrefab(stats.unitType);
         GameObject unitObj = Instantiate(unitPrefab, cell.transform.position, Quaternion.identity);
         Unit unit = unitObj.GetComponent<Unit>();
         if (unit == null)
@@ -210,18 +207,38 @@ public class GameManager : MonoBehaviour
             unit = unitObj.AddComponent<Unit>();
         }
 
-        unit.Initialize(stats, playerID, cell);
+        unit.Initialize(stats, playerID, cell, hexGrid);
         allUnits.Add(unit);
+
+        // Add UnitAI component for AI-controlled units (Player 1)
+        if (playerID == 1)
+        {
+            UnitAI unitAI = unitObj.AddComponent<UnitAI>();
+            Debug.Log($"[GameManager] Added UnitAI to {stats.unitName} for Player {playerID}");
+            // UnitAI will auto-initialize in its Start() method
+        }
 
         Debug.Log($"Spawned {stats.unitName} for Player {playerID} at {cell.Coordinates}");
     }
 
-    private GameObject CreateUnitPrefab()
+    private GameObject CreateUnitPrefab(UnitType unitType)
     {
-        GameObject prefab = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        PrimitiveType primitiveType = GetPrimitiveTypeForUnit(unitType);
+        GameObject prefab = GameObject.CreatePrimitive(primitiveType);
         prefab.name = "Unit";
         prefab.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
         return prefab;
+    }
+
+    private PrimitiveType GetPrimitiveTypeForUnit(UnitType unitType)
+    {
+        return unitType switch
+        {
+            UnitType.Infantry => PrimitiveType.Cylinder,
+            UnitType.Cavalry => PrimitiveType.Capsule,
+            UnitType.Artillery => PrimitiveType.Cube,
+            _ => PrimitiveType.Cylinder
+        };
     }
 
     public void OnCellSelected(HexCell cell)
@@ -236,7 +253,8 @@ public class GameManager : MonoBehaviour
         if (cell.IsOccupied() && cell.OccupyingUnit.OwnerPlayerID == currentPlayerID)
         {
             selectedUnit = cell.OccupyingUnit;
-            Debug.Log($"Selected {selectedUnit.Stats.unitName}");
+            string movedStatus = selectedUnit.HasMovedThisTurn ? " (Already moved this turn)" : "";
+            Debug.Log($"Selected {selectedUnit.Stats.unitName} - Movement: {selectedUnit.RemainingMovement}/{selectedUnit.Stats.movementPoints}{movedStatus}");
             return;
         }
 
@@ -257,15 +275,21 @@ public class GameManager : MonoBehaviour
             else
             {
                 // Try to move
+                Debug.Log($"[Movement Check] Attempting to move {selectedUnit.Stats.unitName} to {cell.Coordinates}");
                 if (selectedUnit.CanMoveTo(cell))
                 {
                     selectedUnit.MoveTo(cell);
+                    anyUnitMovedThisTurn = true;
 
                     // Collect resources if on resource node
                     if (cell.HasResourceNode)
                     {
                         CollectResources(currentPlayerID, cell);
                     }
+                }
+                else
+                {
+                    Debug.Log($"[Movement Check] Movement validation failed (see warning above for details)");
                 }
             }
         }
@@ -293,6 +317,7 @@ public class GameManager : MonoBehaviour
 
         // Next player
         currentPlayerID = (currentPlayerID + 1) % numPlayers;
+        anyUnitMovedThisTurn = false;
 
         if (currentPlayerID == 0)
         {
@@ -364,9 +389,19 @@ public class GameManager : MonoBehaviour
         return currentPlayerID;
     }
 
+    public bool AnyUnitMovedThisTurn => anyUnitMovedThisTurn;
+
     public int GetPlayerResources(int playerID)
     {
         return playerResources.ContainsKey(playerID) ? playerResources[playerID] : 0;
+    }
+
+    public void DeductPlayerResources(int playerID, int amount)
+    {
+        if (playerResources.ContainsKey(playerID))
+        {
+            playerResources[playerID] -= amount;
+        }
     }
 
     public List<Unit> GetAllUnits()
@@ -377,5 +412,10 @@ public class GameManager : MonoBehaviour
     public HexCell GetPlayerBase(int playerID)
     {
         return playerBases.ContainsKey(playerID) ? playerBases[playerID] : null;
+    }
+
+    public HexGrid GetHexGrid()
+    {
+        return hexGrid;
     }
 }

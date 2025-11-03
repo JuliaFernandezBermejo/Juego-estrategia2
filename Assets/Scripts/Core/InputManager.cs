@@ -95,8 +95,6 @@ public class InputManager : MonoBehaviour
         {
             gameManager.OnCellSelected(cell);
         }
-
-        Debug.Log($"Selected cell: {cell.Coordinates}, Terrain: {cell.Terrain}, Occupied: {cell.IsOccupied()}");
     }
 
     public HexCell GetSelectedCell()

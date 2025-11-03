@@ -9,7 +9,7 @@ public class HexGrid : MonoBehaviour
     [Header("Grid Settings")]
     [SerializeField] private int gridWidth = 10;
     [SerializeField] private int gridHeight = 10;
-    [SerializeField] private float hexSize = 1f;
+    [SerializeField] private float hexSize = 1.03f;
     [SerializeField] private GameObject hexCellPrefab;
 
     private Dictionary<HexCoordinates, HexCell> cells = new Dictionary<HexCoordinates, HexCell>();
