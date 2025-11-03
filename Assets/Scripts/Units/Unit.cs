@@ -97,9 +97,9 @@ public class Unit : MonoBehaviour
             return false;
         }
 
-        // Use A* pathfinding to find the actual path
-        Debug.Log($"[CanMoveTo] Check 3: Finding path using A* pathfinding");
-        AStarPathfinding pathfinding = new AStarPathfinding(hexGrid);
+        // Use Dijkstra pathfinding to find the actual path
+        Debug.Log($"[Unit] Calling Dijkstra from CurrentCell={CurrentCell.Coordinates} to targetCell={targetCell.Coordinates}");
+        DijkstraPathfinding pathfinding = new DijkstraPathfinding(hexGrid);
         System.Collections.Generic.List<HexCell> path = pathfinding.FindPath(CurrentCell, targetCell, this);
 
         if (path == null || path.Count == 0)
@@ -110,8 +110,7 @@ public class Unit : MonoBehaviour
 
         // Calculate total cost by summing each hex in the path (skip starting hex at index 0)
         float totalCost = 0;
-        System.Text.StringBuilder pathDetails = new System.Text.StringBuilder();
-        pathDetails.AppendLine($"[CanMoveTo] Path found with {path.Count} cells:");
+        Debug.Log($"[CanMoveTo] Path found with {path.Count} cells:");
 
         for (int i = 0; i < path.Count; i++)
         {
@@ -120,9 +119,9 @@ public class Unit : MonoBehaviour
             {
                 totalCost += cellCost;
             }
-            pathDetails.AppendLine($"  {i}: {path[i].Coordinates} - Terrain: {path[i].Terrain}, Cost: {cellCost:F1}{(i == 0 ? " (starting hex, not counted)" : "")}");
+            // Log each cell separately to avoid truncation
+            Debug.Log($"  {i}: {path[i].Coordinates} - Terrain: {path[i].Terrain}, Cost: {cellCost:F1}{(i == 0 ? " (starting hex, not counted)" : "")}");
         }
-        Debug.Log(pathDetails.ToString());
 
         Debug.Log($"[CanMoveTo] Check 4: Movement cost calculation - TotalCost={totalCost:F1}, RemainingMP={remainingMovement}, Required={Mathf.CeilToInt(totalCost)}");
 
@@ -148,7 +147,7 @@ public class Unit : MonoBehaviour
         }
 
         // Find path again (we know it exists because CanMoveTo succeeded)
-        AStarPathfinding pathfinding = new AStarPathfinding(hexGrid);
+        DijkstraPathfinding pathfinding = new DijkstraPathfinding(hexGrid);
         System.Collections.Generic.List<HexCell> path = pathfinding.FindPath(CurrentCell, targetCell, this);
 
         if (path == null || path.Count == 0)

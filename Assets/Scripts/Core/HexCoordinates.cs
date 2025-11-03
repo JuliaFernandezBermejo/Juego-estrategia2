@@ -21,19 +21,32 @@ public struct HexCoordinates
     public int Y => -q - r;
     public int Z => r;
 
-    // Neighbor directions in axial coordinates (6 directions for hexagons)
-    private static readonly HexCoordinates[] directions = new HexCoordinates[]
+    // Neighbor directions for EVEN rows (r=0,2,4,...) in odd-r offset coordinates
+    private static readonly HexCoordinates[] directionsEven = new HexCoordinates[]
     {
-        new HexCoordinates(1, 0),   // East
-        new HexCoordinates(1, -1),  // Northeast
-        new HexCoordinates(0, -1),  // Northwest
-        new HexCoordinates(-1, 0),  // West
-        new HexCoordinates(-1, 1),  // Southwest
-        new HexCoordinates(0, 1)    // Southeast
+        new HexCoordinates(1, 0),   // E
+        new HexCoordinates(0, -1),  // NE
+        new HexCoordinates(-1, -1), // NW
+        new HexCoordinates(-1, 0),  // W
+        new HexCoordinates(-1, 1),  // SW
+        new HexCoordinates(0, 1)    // SE
+    };
+
+    // Neighbor directions for ODD rows (r=1,3,5,...) in odd-r offset coordinates
+    private static readonly HexCoordinates[] directionsOdd = new HexCoordinates[]
+    {
+        new HexCoordinates(1, 0),   // E
+        new HexCoordinates(1, -1),  // NE
+        new HexCoordinates(0, -1),  // NW
+        new HexCoordinates(-1, 0),  // W
+        new HexCoordinates(0, 1),   // SW
+        new HexCoordinates(1, 1)    // SE
     };
 
     public static HexCoordinates GetNeighbor(HexCoordinates coord, int direction)
     {
+        // Choose direction set based on whether row is even or odd
+        HexCoordinates[] directions = (coord.r % 2 == 0) ? directionsEven : directionsOdd;
         HexCoordinates d = directions[direction];
         return new HexCoordinates(coord.q + d.q, coord.r + d.r);
     }

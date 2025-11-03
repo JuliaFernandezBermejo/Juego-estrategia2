@@ -36,6 +36,18 @@ public class HexCell : MonoBehaviour
         {
             originalColor = Terrain.GetTerrainColor();
             meshRenderer.material.color = originalColor;
+
+            // Update border color to match terrain
+            Transform borderTransform = transform.Find("Border");
+            if (borderTransform != null)
+            {
+                MeshRenderer borderRenderer = borderTransform.GetComponent<MeshRenderer>();
+                if (borderRenderer != null)
+                {
+                    // Use darker version of terrain color for border
+                    borderRenderer.material.color = originalColor * 0.3f;
+                }
+            }
         }
     }
 
@@ -55,6 +67,24 @@ public class HexCell : MonoBehaviour
     public bool IsPassable()
     {
         return Terrain != TerrainType.Water && !IsOccupied();
+    }
+
+    public bool IsPassableForPlayer(int playerID)
+    {
+        // Water is always impassable
+        if (Terrain == TerrainType.Water)
+            return false;
+
+        // Friendly bases are impassable (can't walk on your own base)
+        // Enemy bases are passable (to capture them)
+        if (IsBase && OwnerPlayerID == playerID)
+            return false;
+
+        // Regular occupied cells are impassable
+        if (IsOccupied())
+            return false;
+
+        return true;
     }
 
     public float GetMovementCost()
