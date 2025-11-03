@@ -274,11 +274,13 @@ public class GameManager : MonoBehaviour
             }
             else
             {
-                // Try to move
+                // Try to move (MoveTo handles validation internally)
                 Debug.Log($"[Movement Check] Attempting to move {selectedUnit.Stats.unitName} to {cell.Coordinates}");
-                if (selectedUnit.CanMoveTo(cell))
+                selectedUnit.MoveTo(cell);
+
+                // Check if move succeeded
+                if (selectedUnit.HasMovedThisTurn)
                 {
-                    selectedUnit.MoveTo(cell);
                     anyUnitMovedThisTurn = true;
 
                     // Collect resources if on resource node

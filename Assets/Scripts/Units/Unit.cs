@@ -140,19 +140,32 @@ public class Unit : MonoBehaviour
 
     public void MoveTo(HexCell targetCell)
     {
-        if (!CanMoveTo(targetCell))
+        // Validation checks
+        if (hasMovedThisTurn)
         {
-            // CanMoveTo already logged the reason for failure
+            Debug.LogWarning($"Cannot move {stats.unitName}: Already moved this turn");
             return;
         }
 
-        // Find path again (we know it exists because CanMoveTo succeeded)
+        if (targetCell == null)
+        {
+            Debug.LogWarning($"Cannot move {stats.unitName}: Target cell is null");
+            return;
+        }
+
+        if (hexGrid == null)
+        {
+            Debug.LogWarning($"Cannot move {stats.unitName}: HexGrid reference is null");
+            return;
+        }
+
+        // Find path (only calculated once)
         DijkstraPathfinding pathfinding = new DijkstraPathfinding(hexGrid);
         System.Collections.Generic.List<HexCell> path = pathfinding.FindPath(CurrentCell, targetCell, this);
 
         if (path == null || path.Count == 0)
         {
-            Debug.LogError($"[MoveTo] Path not found (this shouldn't happen after CanMoveTo succeeded)");
+            Debug.LogWarning($"Cannot move {stats.unitName} to {targetCell.Coordinates}: No valid path exists");
             return;
         }
 
@@ -165,6 +178,13 @@ public class Unit : MonoBehaviour
 
         // Round once at the end
         int totalCost = Mathf.CeilToInt(totalPathCost);
+
+        // Check if enough movement points
+        if (remainingMovement < totalCost)
+        {
+            Debug.LogWarning($"Cannot move {stats.unitName} to {targetCell.Coordinates}: Insufficient movement points (need {totalCost}, have {remainingMovement})");
+            return;
+        }
 
         Debug.Log($"[MoveTo] Moving {stats.unitName} along path. Total cost: {totalPathCost:F1} (rounded to {totalCost})");
 
