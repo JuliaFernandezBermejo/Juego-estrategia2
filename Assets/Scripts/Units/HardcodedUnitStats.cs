@@ -14,10 +14,8 @@ public class HardcodedUnitStats
     public int defensePower;
     public int attackRange;
     public int movementPoints;
-    public TerrainType preferredTerrain;
-    public TerrainType penalizedTerrain;
 
-    public HardcodedUnitStats(string name, UnitType type, int cost, int hp, int attack, int defense, int range, int movement, TerrainType preferred, TerrainType penalized)
+    public HardcodedUnitStats(string name, UnitType type, int cost, int hp, int attack, int defense, int range, int movement)
     {
         this.unitName = name;
         this.unitType = type;
@@ -27,24 +25,6 @@ public class HardcodedUnitStats
         this.defensePower = defense;
         this.attackRange = range;
         this.movementPoints = movement;
-        this.preferredTerrain = preferred;
-        this.penalizedTerrain = penalized;
-    }
-
-    public float GetTerrainMovementModifier(TerrainType terrain)
-    {
-        if (terrain == preferredTerrain)
-            return 0.7f; // 30% faster
-        if (terrain == penalizedTerrain)
-            return 1.5f; // 50% slower
-        return 1.0f;
-    }
-
-    public int GetTerrainAttackBonus(TerrainType terrain)
-    {
-        if (terrain == preferredTerrain)
-            return 2;
-        return 0;
     }
 
     // Predefined unit stats
@@ -55,9 +35,7 @@ public class HardcodedUnitStats
         attack: 10,
         defense: 5,
         range: 1,
-        movement: 3,
-        preferred: TerrainType.Forest,
-        penalized: TerrainType.Water
+        movement: 4
     );
 
     public static HardcodedUnitStats Cavalry => new HardcodedUnitStats(
@@ -67,9 +45,7 @@ public class HardcodedUnitStats
         attack: 12,
         defense: 3,
         range: 2,
-        movement: 5,
-        preferred: TerrainType.Plains,
-        penalized: TerrainType.Mountain
+        movement: 6
     );
 
     public static HardcodedUnitStats Artillery => new HardcodedUnitStats(
@@ -79,8 +55,6 @@ public class HardcodedUnitStats
         attack: 15,
         defense: 2,
         range: 4,
-        movement: 2,
-        preferred: TerrainType.Plains,
-        penalized: TerrainType.Mountain
+        movement: 3
     );
 }

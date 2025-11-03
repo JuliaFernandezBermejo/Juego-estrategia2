@@ -22,8 +22,8 @@ public static class TerrainTypeExtensions
         return terrain switch
         {
             TerrainType.Plains => 1.0f,
-            TerrainType.Forest => 1.5f,
-            TerrainType.Mountain => 2.0f,
+            TerrainType.Forest => 2.0f,
+            TerrainType.Mountain => 3.0f,
             TerrainType.Water => 999f, // Effectively impassable
             _ => 1.0f
         };

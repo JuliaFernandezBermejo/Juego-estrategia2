@@ -46,6 +46,7 @@ public class TacticalPathfinding
     {
         if (start == null || goal == null || unit == null)
         {
+            Debug.LogWarning($"[Pathfinding] Null parameters: start={start}, goal={goal}, unit={unit}");
             return null;
         }
 
@@ -54,19 +55,27 @@ public class TacticalPathfinding
             return new List<HexCell> { start };
         }
 
+        Debug.Log($"[Pathfinding] Finding path from {start.Coordinates} to {goal.Coordinates} for {unit.Stats.unitName}");
+
         List<TacticalNode> openSet = new List<TacticalNode>();
         HashSet<HexCell> closedSet = new HashSet<HexCell>();
 
         TacticalNode startNode = new TacticalNode(start, null, 0, GetHeuristic(start, goal), 0);
         openSet.Add(startNode);
 
-        while (openSet.Count > 0)
+        int iterations = 0;
+        int maxIterations = 200; // Prevent infinite loops
+
+        while (openSet.Count > 0 && iterations < maxIterations)
         {
+            iterations++;
             TacticalNode currentNode = GetLowestFCostNode(openSet);
 
             if (currentNode.cell == goal)
             {
-                return ConstructPath(currentNode);
+                List<HexCell> path = ConstructPath(currentNode);
+                Debug.Log($"[Pathfinding] Path found! Length: {path.Count} cells, iterations: {iterations}");
+                return path;
             }
 
             openSet.Remove(currentNode);
@@ -105,6 +114,7 @@ public class TacticalPathfinding
             }
         }
 
+        Debug.LogWarning($"[Pathfinding] NO PATH FOUND from {start.Coordinates} to {goal.Coordinates}! OpenSet exhausted after {iterations} iterations. Closed cells: {closedSet.Count}");
         return null;
     }
 
@@ -123,27 +133,24 @@ public class TacticalPathfinding
 
     private float GetHeuristic(HexCell from, HexCell to)
     {
-        return HexCoordinates.Distance(from.Coordinates, to.Coordinates);
+        // Manhattan distance for hexagonal grid, scaled by minimum terrain cost
+        // This ensures the heuristic is admissible (never overestimates)
+        // Minimum cost is Plains (1.0), so even the cheapest path costs at least distance × 1.0
+        return HexCoordinates.Distance(from.Coordinates, to.Coordinates) * 1.0f;
     }
 
     private float GetMovementCost(HexCell from, HexCell to, Unit unit)
     {
-        float cost = to.GetMovementCost();
-        cost *= unit.Stats.GetTerrainMovementModifier(to.Terrain);
-        return cost;
+        return to.GetMovementCost();
     }
 
     private float GetTacticalCost(HexCell cell, Unit unit)
     {
         float tacticalCost = 0;
 
-        // 1. Danger cost: avoid cells near enemy units
+        // Danger cost: avoid cells near enemy units
         float dangerCost = CalculateDangerCost(cell, unit);
         tacticalCost += dangerCost * DANGER_WEIGHT;
-
-        // 2. Terrain preference cost
-        float terrainCost = CalculateTerrainPreferenceCost(cell, unit);
-        tacticalCost += terrainCost * TERRAIN_PREFERENCE_WEIGHT;
 
         return tacticalCost;
     }
@@ -173,21 +180,6 @@ public class TacticalPathfinding
         }
 
         return danger;
-    }
-
-    private float CalculateTerrainPreferenceCost(HexCell cell, Unit unit)
-    {
-        // Prefer cells with good terrain for this unit type
-        if (cell.Terrain == unit.Stats.preferredTerrain)
-        {
-            return -1.0f; // Bonus (negative cost)
-        }
-        else if (cell.Terrain == unit.Stats.penalizedTerrain)
-        {
-            return 1.0f; // Penalty
-        }
-
-        return 0;
     }
 
     private List<HexCell> ConstructPath(TacticalNode endNode)

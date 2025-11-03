@@ -113,7 +113,9 @@ public class AStarPathfinding
         PathNode lowest = nodes[0];
         for (int i = 1; i < nodes.Count; i++)
         {
-            if (nodes[i].fCost < lowest.fCost)
+            // Pick node with lower fCost, or if tied, pick one closer to goal (lower hCost)
+            if (nodes[i].fCost < lowest.fCost ||
+                (nodes[i].fCost == lowest.fCost && nodes[i].hCost < lowest.hCost))
             {
                 lowest = nodes[i];
             }
@@ -123,22 +125,15 @@ public class AStarPathfinding
 
     private float GetHeuristic(HexCell from, HexCell to)
     {
-        // Manhattan distance for hexagonal grid
-        return HexCoordinates.Distance(from.Coordinates, to.Coordinates);
+        // Manhattan distance for hexagonal grid, scaled by minimum terrain cost
+        // This ensures the heuristic is admissible (never overestimates)
+        // Minimum cost is Plains (1.0), so even the cheapest path costs at least distance × 1.0
+        return HexCoordinates.Distance(from.Coordinates, to.Coordinates) * 1.0f;
     }
 
     private float GetMovementCost(HexCell from, HexCell to, Unit unit)
     {
-        // Base terrain cost
-        float cost = to.GetMovementCost();
-
-        // Apply unit-specific terrain modifiers
-        if (unit != null)
-        {
-            cost *= unit.Stats.GetTerrainMovementModifier(to.Terrain);
-        }
-
-        return cost;
+        return to.GetMovementCost();
     }
 
     private List<HexCell> ConstructPath(PathNode endNode)
