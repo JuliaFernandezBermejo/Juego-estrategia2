@@ -8,7 +8,7 @@ public class GameManager : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private HexGrid hexGrid;
-    [SerializeField] private GameObject unitPrefab;
+    // Removed: unitPrefab is now created locally in SpawnUnit() to avoid race conditions
 
     [Header("Game Settings")]
     [SerializeField] private int numPlayers = 2;
@@ -191,6 +191,7 @@ public class GameManager : MonoBehaviour
             int randomIndex = Random.Range(0, availableCells.Count);
             HexCell cell = availableCells[randomIndex];
             cell.HasResourceNode = true;
+            cell.CreateResourceLabel();
             availableCells.RemoveAt(randomIndex);
 
             Debug.Log($"Resource node placed at {cell.Coordinates}");
@@ -199,7 +200,8 @@ public class GameManager : MonoBehaviour
 
     public void SpawnUnit(HardcodedUnitStats stats, int playerID, HexCell cell)
     {
-        unitPrefab = CreateUnitPrefab(stats.unitType);
+        GameObject unitPrefab = CreateUnitPrefab(stats.unitType);
+
         GameObject unitObj = Instantiate(unitPrefab, cell.transform.position, Quaternion.identity);
         Unit unit = unitObj.GetComponent<Unit>();
         if (unit == null)
@@ -214,7 +216,6 @@ public class GameManager : MonoBehaviour
         if (playerID == 1)
         {
             UnitAI unitAI = unitObj.AddComponent<UnitAI>();
-            Debug.Log($"[GameManager] Added UnitAI to {stats.unitName} for Player {playerID}");
             // UnitAI will auto-initialize in its Start() method
         }
 
@@ -275,11 +276,11 @@ public class GameManager : MonoBehaviour
             else
             {
                 // Try to move (MoveTo handles validation internally)
-                Debug.Log($"[Movement Check] Attempting to move {selectedUnit.Stats.unitName} to {cell.Coordinates}");
+                HexCell previousCell = selectedUnit.CurrentCell;
                 selectedUnit.MoveTo(cell);
 
-                // Check if move succeeded
-                if (selectedUnit.HasMovedThisTurn)
+                // Only collect resources if movement actually succeeded (cell changed)
+                if (selectedUnit.CurrentCell != previousCell)
                 {
                     anyUnitMovedThisTurn = true;
 
@@ -288,10 +289,6 @@ public class GameManager : MonoBehaviour
                     {
                         CollectResources(currentPlayerID, cell);
                     }
-                }
-                else
-                {
-                    Debug.Log($"[Movement Check] Movement validation failed (see warning above for details)");
                 }
             }
         }
@@ -302,6 +299,9 @@ public class GameManager : MonoBehaviour
         int amount = 10;
         playerResources[playerID] += amount;
         Debug.Log($"Player {playerID} collected {amount} resources. Total: {playerResources[playerID]}");
+
+        cell.HasResourceNode = false;
+        cell.DestroyResourceLabel();
     }
 
     public void EndTurn()

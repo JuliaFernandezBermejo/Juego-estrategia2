@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 /// <summary>
@@ -15,6 +16,7 @@ public class HexCell : MonoBehaviour
     private MeshRenderer meshRenderer;
     private Color originalColor;
     private Color highlightColor = new Color(1f, 1f, 0.5f, 1f);
+    private GameObject resourceLabel;
 
     public void Initialize(HexCoordinates coordinates, TerrainType terrain)
     {
@@ -105,5 +107,33 @@ public class HexCell : MonoBehaviour
     private void OnMouseExit()
     {
         Highlight(false);
+    }
+
+    public void CreateResourceLabel()
+    {
+        GameObject labelObj = new GameObject("ResourceLabel");
+        labelObj.transform.position = transform.position + Vector3.up * 0.5f;
+        labelObj.transform.SetParent(transform);
+
+        TextMeshPro tmp = labelObj.AddComponent<TextMeshPro>();
+        tmp.text = "+10";
+        tmp.fontSize = 5;
+        tmp.color = new Color(0.8f, 0.7f, 0f);
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.transform.rotation = Quaternion.Euler(90, 0, 0);
+
+        tmp.outlineWidth = 0.2f;
+        tmp.outlineColor = Color.black;
+
+        resourceLabel = labelObj;
+    }
+
+    public void DestroyResourceLabel()
+    {
+        if (resourceLabel != null)
+        {
+            Destroy(resourceLabel);
+            resourceLabel = null;
+        }
     }
 }

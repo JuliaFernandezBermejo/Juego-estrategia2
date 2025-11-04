@@ -75,16 +75,12 @@ public class Unit : MonoBehaviour
 
     public bool CanMoveTo(HexCell targetCell)
     {
-        Debug.Log($"[CanMoveTo] START - Checking if {stats.unitName} can move to {targetCell?.Coordinates}");
-
-        Debug.Log($"[CanMoveTo] Check 1: hasMovedThisTurn = {hasMovedThisTurn}");
         if (hasMovedThisTurn)
         {
             Debug.LogError($"Cannot move {stats.unitName}: Already moved this turn");
             return false;
         }
 
-        Debug.Log($"[CanMoveTo] Check 2: targetCell null check");
         if (targetCell == null)
         {
             Debug.LogError($"Cannot move {stats.unitName}: Target cell is null");
@@ -98,7 +94,6 @@ public class Unit : MonoBehaviour
         }
 
         // Use Dijkstra pathfinding to find the actual path
-        Debug.Log($"[Unit] Calling Dijkstra from CurrentCell={CurrentCell.Coordinates} to targetCell={targetCell.Coordinates}");
         DijkstraPathfinding pathfinding = new DijkstraPathfinding(hexGrid);
         System.Collections.Generic.List<HexCell> path = pathfinding.FindPath(CurrentCell, targetCell, this);
 
@@ -110,7 +105,6 @@ public class Unit : MonoBehaviour
 
         // Calculate total cost by summing each hex in the path (skip starting hex at index 0)
         float totalCost = 0;
-        Debug.Log($"[CanMoveTo] Path found with {path.Count} cells:");
 
         for (int i = 0; i < path.Count; i++)
         {
@@ -119,11 +113,7 @@ public class Unit : MonoBehaviour
             {
                 totalCost += cellCost;
             }
-            // Log each cell separately to avoid truncation
-            Debug.Log($"  {i}: {path[i].Coordinates} - Terrain: {path[i].Terrain}, Cost: {cellCost:F1}{(i == 0 ? " (starting hex, not counted)" : "")}");
         }
-
-        Debug.Log($"[CanMoveTo] Check 4: Movement cost calculation - TotalCost={totalCost:F1}, RemainingMP={remainingMovement}, Required={Mathf.CeilToInt(totalCost)}");
 
         if (remainingMovement < Mathf.CeilToInt(totalCost))
         {
@@ -134,7 +124,6 @@ public class Unit : MonoBehaviour
             return false;
         }
 
-        Debug.Log($"[CanMoveTo] SUCCESS - Movement is valid");
         return true;
     }
 
@@ -186,8 +175,6 @@ public class Unit : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[MoveTo] Moving {stats.unitName} along path. Total cost: {totalPathCost:F1} (rounded to {totalCost})");
-
         // Deduct the total cost
         remainingMovement -= totalCost;
 
@@ -196,11 +183,9 @@ public class Unit : MonoBehaviour
         {
             HexCell nextCell = path[i];
             SetCell(nextCell);
-            Debug.Log($"[MoveTo] Step {i}: Moved to {nextCell.Coordinates} (Terrain: {nextCell.Terrain}, Cost: {nextCell.GetMovementCost():F1})");
         }
 
         hasMovedThisTurn = true;
-        Debug.Log($"[MoveTo] Movement complete. Final position: {CurrentCell.Coordinates}, Remaining MP: {remainingMovement}");
     }
 
     private float CalculateMoveCost(HexCell cell)

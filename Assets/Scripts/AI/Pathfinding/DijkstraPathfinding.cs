@@ -44,8 +44,6 @@ public class DijkstraPathfinding
             return new List<HexCell> { start };
         }
 
-        Debug.Log($"[Dijkstra] START: from {start.Coordinates} to {goal.Coordinates}");
-
         // Initialize open and closed sets
         List<PathNode> openSet = new List<PathNode>();
         HashSet<HexCell> closedSet = new HashSet<HexCell>();
@@ -54,23 +52,14 @@ public class DijkstraPathfinding
         PathNode startNode = new PathNode(start, null, 0);
         openSet.Add(startNode);
 
-        int iteration = 0;
         while (openSet.Count > 0)
         {
-            iteration++;
             // Get node with lowest cost
             PathNode currentNode = GetLowestCostNode(openSet);
-
-            bool debug = iteration <= 3; // Debug first 3 iterations only
-            if (debug)
-            {
-                Debug.Log($"[Dijkstra] Iter {iteration}: Processing {currentNode.cell.Coordinates} (Terrain: {currentNode.cell.Terrain}, gCost={currentNode.gCost:F1})");
-            }
 
             // Check if reached goal
             if (currentNode.cell == goal)
             {
-                Debug.Log($"[Dijkstra] GOAL REACHED! Cost: {currentNode.gCost:F1}");
                 return ConstructPath(currentNode);
             }
 
@@ -80,24 +69,18 @@ public class DijkstraPathfinding
 
             // Check neighbors
             List<HexCell> neighbors = hexGrid.GetNeighbors(currentNode.cell.Coordinates);
-            if (debug)
-            {
-                Debug.Log($"[Dijkstra]   Found {neighbors.Count} neighbors");
-            }
 
             foreach (HexCell neighbor in neighbors)
             {
                 // Skip if already evaluated
                 if (closedSet.Contains(neighbor))
                 {
-                    if (debug) Debug.Log($"[Dijkstra]     {neighbor.Coordinates}: SKIP (closed set)");
                     continue;
                 }
 
                 // Skip water, occupied cells, and friendly bases (except goal)
                 if (neighbor != goal && unit != null && (!neighbor.IsPassableForPlayer(unit.OwnerPlayerID)))
                 {
-                    if (debug) Debug.Log($"[Dijkstra]     {neighbor.Coordinates}: SKIP (impassable - Water={neighbor.Terrain == TerrainType.Water}, Occupied={neighbor.IsOccupied()}, FriendlyBase={neighbor.IsBase && neighbor.OwnerPlayerID == unit.OwnerPlayerID})");
                     continue;
                 }
 
@@ -113,18 +96,12 @@ public class DijkstraPathfinding
                     // Add new node to open set
                     PathNode newNode = new PathNode(neighbor, currentNode, newGCost);
                     openSet.Add(newNode);
-                    if (debug) Debug.Log($"[Dijkstra]     {neighbor.Coordinates} (Terrain: {neighbor.Terrain}): ADDED with gCost={newGCost:F1}");
                 }
                 else if (newGCost < existingNode.gCost)
                 {
                     // Update existing node with better path
-                    if (debug) Debug.Log($"[Dijkstra]     {neighbor.Coordinates}: UPDATED from {existingNode.gCost:F1} to {newGCost:F1}");
                     existingNode.gCost = newGCost;
                     existingNode.parent = currentNode;
-                }
-                else
-                {
-                    if (debug) Debug.Log($"[Dijkstra]     {neighbor.Coordinates}: NO UPDATE (existing {existingNode.gCost:F1} <= new {newGCost:F1})");
                 }
             }
         }

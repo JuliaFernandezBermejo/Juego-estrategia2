@@ -16,6 +16,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI resourcesText;
     [SerializeField] private TextMeshProUGUI infoText;
 
+    private int lastPlayerID = -1;
+    private int lastResources = -1;
+
     void Start()
     {
         if (gameManager == null)
@@ -35,14 +38,16 @@ public class UIManager : MonoBehaviour
         int currentPlayer = gameManager.GetCurrentPlayerID();
         int resources = gameManager.GetPlayerResources(currentPlayer);
 
-        if (turnText != null)
+        if (turnText != null && currentPlayer != lastPlayerID)
         {
             turnText.text = $"Player {currentPlayer}'s Turn";
+            lastPlayerID = currentPlayer;
         }
 
-        if (resourcesText != null)
+        if (resourcesText != null && resources != lastResources)
         {
             resourcesText.text = $"Resources: {resources}";
+            lastResources = resources;
         }
 
         if (infoText != null)
