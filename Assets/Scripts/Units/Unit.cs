@@ -45,6 +45,8 @@ public class Unit : MonoBehaviour
         if (meshRenderer != null)
         {
             playerColor = ownerPlayerID == 0 ? Color.blue : Color.red;
+            // Create a unique material instance for this unit to prevent color sharing
+            meshRenderer.material = new Material(meshRenderer.material);
             meshRenderer.material.color = playerColor;
         }
     }
@@ -68,6 +70,12 @@ public class Unit : MonoBehaviour
         CurrentCell = cell;
         if (cell != null)
         {
+            // Safety check: warn if overwriting another unit
+            if (cell.OccupyingUnit != null && cell.OccupyingUnit != this)
+            {
+                Debug.LogError($"[CRITICAL BUG] SetCell is overwriting {cell.OccupyingUnit.Stats.unitName} (Player {cell.OccupyingUnit.OwnerPlayerID}) at {cell.Coordinates} with {stats.unitName} (Player {OwnerPlayerID})! This should never happen!");
+            }
+
             cell.OccupyingUnit = this;
             transform.position = cell.transform.position + Vector3.up * 0.5f;
         }
@@ -75,12 +83,6 @@ public class Unit : MonoBehaviour
 
     public bool CanMoveTo(HexCell targetCell)
     {
-        if (hasMovedThisTurn)
-        {
-            Debug.LogError($"Cannot move {stats.unitName}: Already moved this turn");
-            return false;
-        }
-
         if (targetCell == null)
         {
             Debug.LogError($"Cannot move {stats.unitName}: Target cell is null");
@@ -124,18 +126,19 @@ public class Unit : MonoBehaviour
             return false;
         }
 
+        // Check if destination cell is occupied
+        if (targetCell.IsOccupied())
+        {
+            Debug.LogError($"Cannot move {stats.unitName} to {targetCell.Coordinates}: Cell is occupied by {targetCell.OccupyingUnit.Stats.unitName}");
+            return false;
+        }
+
         return true;
     }
 
     public void MoveTo(HexCell targetCell)
     {
         // Validation checks
-        if (hasMovedThisTurn)
-        {
-            Debug.LogWarning($"Cannot move {stats.unitName}: Already moved this turn");
-            return;
-        }
-
         if (targetCell == null)
         {
             Debug.LogWarning($"Cannot move {stats.unitName}: Target cell is null");
@@ -145,6 +148,13 @@ public class Unit : MonoBehaviour
         if (hexGrid == null)
         {
             Debug.LogWarning($"Cannot move {stats.unitName}: HexGrid reference is null");
+            return;
+        }
+
+        // Check if destination cell is occupied
+        if (targetCell.IsOccupied())
+        {
+            Debug.LogWarning($"Cannot move {stats.unitName} to {targetCell.Coordinates}: Cell is occupied by {targetCell.OccupyingUnit.Stats.unitName}");
             return;
         }
 
@@ -210,9 +220,7 @@ public class Unit : MonoBehaviour
             return;
         }
 
-        int defenseBonus = target.CurrentCell.GetDefenseBonus();
-        int damage = stats.attackPower - target.stats.defensePower - defenseBonus;
-        damage = Mathf.Max(1, damage); // Minimum 1 damage
+        int damage = stats.attackPower; // Pure attack damage
 
         target.TakeDamage(damage);
         hasAttacked = true;

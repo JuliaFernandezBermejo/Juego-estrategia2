@@ -88,7 +88,8 @@ public class TacticalPathfinding
                 if (closedSet.Contains(neighbor))
                     continue;
 
-                if (neighbor != goal && !neighbor.IsPassable())
+                // Check passability for all cells including the goal
+                if (!neighbor.IsPassable())
                     continue;
 
                 // Calculate costs

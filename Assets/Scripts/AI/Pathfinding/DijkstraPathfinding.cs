@@ -78,8 +78,8 @@ public class DijkstraPathfinding
                     continue;
                 }
 
-                // Skip water, occupied cells, and friendly bases (except goal)
-                if (neighbor != goal && unit != null && (!neighbor.IsPassableForPlayer(unit.OwnerPlayerID)))
+                // Skip water, occupied cells, and friendly bases (check all cells including goal)
+                if (unit != null && (!neighbor.IsPassableForPlayer(unit.OwnerPlayerID)))
                 {
                     continue;
                 }
