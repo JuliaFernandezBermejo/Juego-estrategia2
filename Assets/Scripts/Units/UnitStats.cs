@@ -14,7 +14,6 @@ public class UnitStats : ScriptableObject
     [Header("Combat Stats")]
     public int maxHealth;
     public int attackPower;
-    public int defensePower;
     public int attackRange;
 
     [Header("Movement")]

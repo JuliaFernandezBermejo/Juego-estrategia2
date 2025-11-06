@@ -1,13 +1,13 @@
 using UnityEngine;
 
 /// <summary>
-/// Different terrain types that affect movement and combat.
+/// Different terrain types that affect movement.
 /// </summary>
 public enum TerrainType
 {
     Plains,   // Normal movement
-    Forest,   // Slower movement, defense bonus
-    Mountain, // Very slow movement, high defense
+    Forest,   // Slower movement
+    Mountain, // Very slow movement
     Water     // Impassable for most units
 }
 
@@ -26,19 +26,6 @@ public static class TerrainTypeExtensions
             TerrainType.Mountain => 3.0f,
             TerrainType.Water => 999f, // Effectively impassable
             _ => 1.0f
-        };
-    }
-
-    // Defense bonus when unit is on this terrain
-    public static int GetDefenseBonus(this TerrainType terrain)
-    {
-        return terrain switch
-        {
-            TerrainType.Plains => 0,
-            TerrainType.Forest => 2,
-            TerrainType.Mountain => 3,
-            TerrainType.Water => 0,
-            _ => 0
         };
     }
 

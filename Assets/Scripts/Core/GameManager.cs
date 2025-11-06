@@ -306,15 +306,6 @@ public class GameManager : MonoBehaviour
 
     public void EndTurn()
     {
-        // Refresh all units for current player
-        foreach (var unit in allUnits)
-        {
-            if (unit.OwnerPlayerID == currentPlayerID)
-            {
-                unit.RefreshTurn();
-            }
-        }
-
         selectedUnit = null;
 
         // Next player
@@ -324,6 +315,15 @@ public class GameManager : MonoBehaviour
         if (currentPlayerID == 0)
         {
             turnNumber++;
+        }
+
+        // Refresh all units for NEW current player
+        foreach (var unit in allUnits)
+        {
+            if (unit.OwnerPlayerID == currentPlayerID)
+            {
+                unit.RefreshTurn();
+            }
         }
 
         // Give resources per turn

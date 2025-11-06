@@ -173,39 +173,38 @@ public class UnitAI : MonoBehaviour
         // Active defense: move toward nearby threats or patrol defensively
         if (unit.RemainingMovement > 0)
         {
-            // Check for nearby enemies (not in attack range but close)
-            Unit nearbyThreat = GetClosestEnemy(unit.Stats.attackRange + 3);
+            // Check if any enemy is within 5 hexes of BASE (not of this unit)
+            Unit nearbyThreat = GetClosestEnemyToBase(5);
 
             if (nearbyThreat != null)
             {
-                // Move toward the threat to intercept
-                Debug.Log($"[UnitAI] {unit.Stats.unitName} defending: moving toward threat at {nearbyThreat.CurrentCell.Coordinates}");
+                // Enemy is threatening base - move to intercept
+                Debug.Log($"[UnitAI] {unit.Stats.unitName} defending: enemy {nearbyThreat.Stats.unitName} within 5 hexes of base - intercepting");
                 MoveToward(nearbyThreat.CurrentCell);
             }
             else
             {
-                // No immediate threats - position between base and likely enemy approach
-                // Move to a strategic position (slightly toward enemy base)
+                // No immediate threats - patrol the defensive perimeter
                 int distance = HexCoordinates.Distance(unit.CurrentCell.Coordinates, targetCell.Coordinates);
 
-                // Stay within 1-3 cells of the base (defensive perimeter)
+                // Maintain perimeter at 2-3 cells from base
                 if (distance > 3)
                 {
-                    // Too far from base, move back
+                    // Too far from base, move back toward base
                     Debug.Log($"[UnitAI] {unit.Stats.unitName} defending: returning to defensive perimeter");
                     MoveToward(targetCell);
                 }
-                else if (distance < 1)
+                else if (distance < 2)
                 {
-                    // Too close to base (on the base), move to perimeter
+                    // Too close to base, move outward toward enemy base direction
                     HexCell enemyBase = gameManager.GetPlayerBase(unit.OwnerPlayerID == 0 ? 1 : 0);
                     if (enemyBase != null)
                     {
-                        Debug.Log($"[UnitAI] {unit.Stats.unitName} defending: moving to intercept position");
+                        Debug.Log($"[UnitAI] {unit.Stats.unitName} defending: patrolling outward to perimeter");
                         MoveToward(enemyBase);
                     }
                 }
-                // else: already in good defensive position (1-3 cells from base)
+                // else: distance is 2-3, already at good defensive position
             }
         }
 
@@ -357,6 +356,32 @@ public class UnitAI : MonoBehaviour
         }
 
         return closest;
+    }
+
+    private Unit GetClosestEnemyToBase(int maxRange)
+    {
+        HexCell ownBase = gameManager.GetPlayerBase(unit.OwnerPlayerID);
+        if (ownBase == null)
+            return null;
+
+        List<Unit> allUnits = gameManager.GetAllUnits();
+        Unit closestThreat = null;
+        int closestDist = int.MaxValue;
+
+        foreach (var other in allUnits)
+        {
+            if (other.OwnerPlayerID != unit.OwnerPlayerID && other.IsAlive())
+            {
+                int distance = HexCoordinates.Distance(ownBase.Coordinates, other.CurrentCell.Coordinates);
+                if (distance <= maxRange && distance < closestDist)
+                {
+                    closestThreat = other;
+                    closestDist = distance;
+                }
+            }
+        }
+
+        return closestThreat;
     }
 
     private List<Unit> GetNearbyEnemies(int range)

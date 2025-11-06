@@ -24,20 +24,20 @@ COMPONENTES DEL JUEGO
 
 2. TIPOS DE TERRENO
 
-   Terreno        | Movimiento | Def. | Color         | Notas
-   ---------------|------------|------|---------------|--------------------------------
-   Llanuras       | 1.0x       | 0    | Verde claro   | -
-   Bosque         | 1.5x       | +2   | Verde oscuro  | Ventaja: Infantería
-   Montaña        | 2.0x       | +3   | Gris          | Penalización: Caballería, Art.
-   Agua           | Impasable  | -    | Azul          | Intransitable
+   Terreno        | Movimiento | Color         | Notas
+   ---------------|------------|---------------|--------------------------------
+   Llanuras       | 1.0x       | Verde claro   | Terreno normal
+   Bosque         | 2.0x       | Verde oscuro  | Movimiento más lento
+   Montaña        | 3.0x       | Gris          | Movimiento muy lento
+   Agua           | Impasable  | Azul          | Intransitable
 
 3. UNIDADES
 
-   Unidad      | Coste | Vida | Ataque | Defensa | Alcance | Mov. | Terreno Pref.
-   ------------|-------|------|--------|---------|---------|------|---------------
-   Infantería  | 20    | 100  | 10     | 5       | 1       | 3    | Bosque
-   Caballería  | 30    | 80   | 12     | 3       | 2       | 5    | Llanuras
-   Artillería  | 40    | 60   | 15     | 2       | 4       | 2    | Llanuras
+   Unidad      | Coste | Vida | Ataque | Alcance | Mov.
+   ------------|-------|------|--------|---------|------
+   Infantería  | 20    | 20   | 10     | 1       | 4
+   Caballería  | 30    | 30   | 12     | 1       | 6
+   Artillería  | 40    | 40   | 15     | 2       | 3
 
 4. RECURSOS
    - Se obtienen ocupando celdas con nodos de recursos
@@ -71,8 +71,7 @@ MECÁNICAS DEL JUEGO
    - Seleccionar unidad atacante
    - Clic en unidad enemiga dentro del alcance
    - Fórmula de daño:
-     DAÑO = (Ataque + Bonif. Terreno) - (Defensa + Bonif. Defensa)
-   - Daño mínimo: 1
+     DAÑO = Ataque
    - Cada unidad ataca una vez por turno
    - Unidad muere cuando HP llega a 0
 

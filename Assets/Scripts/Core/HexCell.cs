@@ -94,11 +94,6 @@ public class HexCell : MonoBehaviour
         return Terrain.GetMovementCost();
     }
 
-    public int GetDefenseBonus()
-    {
-        return Terrain.GetDefenseBonus();
-    }
-
     private void OnMouseEnter()
     {
         Highlight(true);

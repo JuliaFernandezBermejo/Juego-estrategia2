@@ -22,6 +22,7 @@ public class StrategicManager : MonoBehaviour
 
     // Strategic state
     private int turnsSinceLastProduction = 0;
+    private bool hasReached5Units = false;
 
     void Start()
     {
@@ -207,6 +208,77 @@ public class StrategicManager : MonoBehaviour
         }
     }
 
+    private HardcodedUnitStats ChooseUnitType()
+    {
+        HexCell ownBase = gameManager.GetPlayerBase(playerID);
+        List<Unit> allUnits = gameManager.GetAllUnits();
+
+        // Count enemies within 4 hexes of base
+        int enemiesNearBase = 0;
+        foreach (var unit in allUnits)
+        {
+            if (unit.OwnerPlayerID != playerID && unit.IsAlive())
+            {
+                int distance = HexCoordinates.Distance(ownBase.Coordinates, unit.CurrentCell.Coordinates);
+                if (distance <= 4)
+                {
+                    enemiesNearBase++;
+                }
+            }
+        }
+
+        // If 3+ enemies near base AND can afford artillery, produce it for defense
+        if (enemiesNearBase >= 3 && gameManager.GetPlayerResources(playerID) >= HardcodedUnitStats.Artillery.cost)
+        {
+            Debug.Log($"[StrategicAI] {enemiesNearBase} enemies near base - producing Artillery for defense");
+            return HardcodedUnitStats.Artillery;
+        }
+
+        // Count enemy unit types
+        int enemyInfantry = 0;
+        int enemyCavalry = 0;
+        int enemyArtillery = 0;
+
+        foreach (var unit in allUnits)
+        {
+            if (unit.OwnerPlayerID != playerID && unit.IsAlive())
+            {
+                switch (unit.Stats.unitType)
+                {
+                    case UnitType.Infantry:
+                        enemyInfantry++;
+                        break;
+                    case UnitType.Cavalry:
+                        enemyCavalry++;
+                        break;
+                    case UnitType.Artillery:
+                        enemyArtillery++;
+                        break;
+                }
+            }
+        }
+
+        // Counter enemy composition
+        if (enemyCavalry > enemyInfantry && enemyCavalry > enemyArtillery)
+        {
+            Debug.Log($"[StrategicAI] Enemy has mostly Cavalry - producing Infantry to counter");
+            return HardcodedUnitStats.Infantry;
+        }
+        else if (enemyInfantry > enemyCavalry && enemyInfantry > enemyArtillery)
+        {
+            Debug.Log($"[StrategicAI] Enemy has mostly Infantry - producing Cavalry to counter");
+            return HardcodedUnitStats.Cavalry;
+        }
+        else if (enemyArtillery > enemyInfantry && enemyArtillery > enemyCavalry)
+        {
+            Debug.Log($"[StrategicAI] Enemy has mostly Artillery - producing Cavalry to close distance");
+            return HardcodedUnitStats.Cavalry;
+        }
+
+        // Default: produce infantry (balanced, cheap)
+        return HardcodedUnitStats.Infantry;
+    }
+
     private void ConsiderProduction()
     {
         int resources = gameManager.GetPlayerResources(playerID);
@@ -215,22 +287,40 @@ public class StrategicManager : MonoBehaviour
         if (ownBase == null)
             return;
 
-        // Simple production logic: produce if we have resources and it's been a few turns
-        if (resources >= 30 && turnsSinceLastProduction >= 2)
-        {
-            // Find empty cell near base
-            List<HexCell> neighbors = hexGrid.GetNeighbors(ownBase.Coordinates);
+        int ownUnitCount = GetOwnUnitCount();
 
-            foreach (var cell in neighbors)
+        // Track if we've reached 5 units
+        if (ownUnitCount >= 5)
+        {
+            hasReached5Units = true;
+        }
+
+        // Production limits: build to 5 initially, then maintain 3
+        bool shouldProduce = (ownUnitCount < 5 && !hasReached5Units) || (hasReached5Units && ownUnitCount < 3);
+
+        if (!shouldProduce)
+            return;
+
+        // Check if we have enough resources and cooldown
+        HardcodedUnitStats chosenUnit = ChooseUnitType();
+
+        if (resources < chosenUnit.cost || turnsSinceLastProduction < 2)
+            return;
+
+        // Find empty cell near base
+        List<HexCell> neighbors = hexGrid.GetNeighbors(ownBase.Coordinates);
+
+        foreach (var cell in neighbors)
+        {
+            if (cell.IsPassable())
             {
-                if (cell.IsPassable())
-                {
-                    // Produce infantry (cheapest unit)
-                    // Note: This requires GameManager to have a SpawnUnit method that costs resources
-                    Debug.Log($"AI producing unit at {cell.Coordinates}");
-                    turnsSinceLastProduction = 0;
-                    break;
-                }
+                // Actually spawn the unit
+                gameManager.SpawnUnit(chosenUnit, playerID, cell);
+                gameManager.DeductPlayerResources(playerID, chosenUnit.cost);
+                turnsSinceLastProduction = 0;
+
+                Debug.Log($"AI produced {chosenUnit.unitName} at {cell.Coordinates}. Units: {ownUnitCount + 1}");
+                break;
             }
         }
     }
